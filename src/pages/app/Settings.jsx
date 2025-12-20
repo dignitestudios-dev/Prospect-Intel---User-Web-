@@ -15,7 +15,7 @@ export default function SettingsPage() {
 
   const handleRequestPasswordClick = () => {
     // Logic for requesting password change can be added here
-    navigate("/app/reset-password");
+    navigate("/auth/reset-password");
   }
 
   return (

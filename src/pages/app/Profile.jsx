@@ -210,13 +210,13 @@ const Profile = () => {
        <div className="flex space-x-3">
                                 <button 
                                     className="px-6 py-3 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50"
-                                    onClick={handleSaveProfile} // <-- ADDED HANDLER
+                                    onClick={handleSaveProfile} 
                                 >
                                     Save Profile
                                 </button>
                                 <button 
                                     className="px-4 py-3 bg-[#0085CA] text-white text-sm font-medium rounded-lg hover:bg-blue-700"
-                                    onClick={handleRequestUpdates} // <-- ADDED HANDLER
+                                    onClick={handleRequestUpdates} 
                                 >
                                     Request Updates
                                 </button>
@@ -424,7 +424,7 @@ battle through any adversity to get what he needs done on the field.            
 
     {/* ---------- Strength Box ---------- */}
     <div className="bg-white bg-opacity-25  rounded-xl border-2 border-white  p-8">
-      <h3 className="text-center text-lg font-bold text-gray-800 mb-6">
+      <h3 className="text-center text-lg font-bold text-[#0085CA] mb-6">
         STRENGTH
       </h3>
 
@@ -446,7 +446,7 @@ battle through any adversity to get what he needs done on the field.            
 
     {/* ---------- Weakness Box ---------- */}
     <div className="bg-white bg-opacity-25  rounded-xl border-2 border-white  p-8">
-      <h3 className="text-center text-lg font-bold text-gray-800 mb-6">
+      <h3 className="text-center text-lg font-bold text-[#0085CA] mb-6">
         WEAKNESS
       </h3>
 
