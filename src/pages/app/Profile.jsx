@@ -98,15 +98,20 @@ const InfoBox = ({
         <span className="ml-2">{title}</span>
       </h3>
       {score && (
-        <div className="flex items-center border border-gray-300 rounded-lg p-2 bg-gray-50">
-          <span className="text-xs font-semibold text-gray-700 mr-2">
-            PI Score
-          </span>
-          <span className={`text-xl font-bold ${scoreColorClass}`}>
-            {score}
-          </span>
-        </div>
-      )}
+  <div
+    className={`flex items-center border border-gray-300 rounded-lg p-2 ${
+      score === "A" ? "bg-[#131212]" : "bg-[#909090]"
+    }`}
+  >
+    <span className="text-xs font-semibold text-white mr-2">
+      PI Score
+    </span>
+    <span className="text-xl font-bold text-white">
+      {score}
+    </span>
+  </div>
+)}
+
     </div>
     <div className="p-6 rounded-xl shadow-sm mb-6 border-2 border-white">
       <div>{children}</div>
