@@ -3,24 +3,24 @@ import { useNavigate } from "react-router"; // Use 'react-router-dom' for useNav
 import { FiLoader } from "react-icons/fi";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 // Assuming Logo is the dark 'PROSPECT INTEL' logo from the image
-import { Logo } from "../../assets/export"; 
-import axios from "../../axios"; 
+import { Logo, prospectLogo } from "../../assets/export";
+import axios from "../../axios";
 import Cookies from "js-cookie";
-import { ErrorToast } from "../../components/global/Toaster"; 
+import { ErrorToast } from "../../components/global/Toaster";
 import DummyNavbar from "../../components/layout/DummyNavbar";
 
 // The 'login' import seems unused in the logic, keeping it for completeness if needed elsewhere
-// import { login } from "../../assets/export"; 
+// import { login } from "../../assets/export";
 
 const DummyLogin = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   // State for managing form fields and error messages
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); 
-  const [emailError, setEmailError] = useState(""); 
-  const [passwordError, setPasswordError] = useState(""); 
+  const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   // Handle input changes
   const handleEmailChange = (e) => setEmail(e.target.value);
@@ -35,7 +35,7 @@ const DummyLogin = () => {
   };
 
   // Keep original logic for navigating to dashboard (you can adjust this as needed)
-  const handleLoginClick = () => { 
+  const handleLoginClick = () => {
     navigate("/app/dashboard");
   };
 
@@ -70,7 +70,10 @@ const DummyLogin = () => {
         Cookies.set("user", JSON.stringify(response.data.data.admin));
         navigate("/app/dashboard");
       } else {
-        ErrorToast(response.data.message || "An unknown error occurred. Please try again.");
+        ErrorToast(
+          response.data.message ||
+            "An unknown error occurred. Please try again."
+        );
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -80,11 +83,9 @@ const DummyLogin = () => {
     }
   };
 
-
   return (
     // Outer container for the whole page with light blue/gray background
     <div className="min-h-screen bg-[#EAEEF8] flex flex-col w-full">
-      
       {/* 1. Header Bar */}
 
       {/* <header className="w-full bg-white shadow-sm">
@@ -119,19 +120,16 @@ const DummyLogin = () => {
       <main className="flex-grow flex items-center justify-center">
         {/* Container for the centered content (Logo and Form) */}
         <div className="w-full max-w-md flex flex-col items-center">
-          
           {/* Large Centered Logo */}
           <div className="mb-8">
-            <img 
-              src={Logo} 
-              alt="Prospect Intel Logo Large" 
-              className="h-auto w-auto" 
+            <img
+              src={prospectLogo}
+              alt="Prospect Intel Logo Large"
+              className="h-auto w-auto"
             />
           </div>
-
           {/* Login Form Wrapper */}
           <div className="w-full rounded-xl">
-            
             {/* Log In Title */}
             <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
               Log In
@@ -140,8 +138,13 @@ const DummyLogin = () => {
             {/* Form */}
             {/* The form structure below matches the desired look of inputs, 
                 replacing the old translucent/background-image style. */}
-            <form className="w-full flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
-
+            <form
+              className="w-full flex flex-col gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLogin();
+              }}
+            >
               {/* Username/Email Input */}
               <div className="w-full">
                 <input
@@ -153,7 +156,9 @@ const DummyLogin = () => {
                   value={email}
                   onChange={handleEmailChange}
                 />
-                {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
+                {emailError && (
+                  <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                )}
               </div>
 
               {/* Password Input with Toggle */}
@@ -174,9 +179,11 @@ const DummyLogin = () => {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {/* Using FaRegEyeSlash for the 'eye with a slash' icon shown in the image */}
-                  {showPassword ? <FaRegEye /> : <FaRegEyeSlash />} 
+                  {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
                 </button>
-                {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
+                {passwordError && (
+                  <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                )}
               </div>
 
               {/* Forgot Password Link (Styled to be smaller and centered) */}
@@ -201,17 +208,23 @@ const DummyLogin = () => {
                 {loading && <FiLoader className="animate-spin text-lg" />}
               </button>
             </form>
-            
+
             {/* Terms & Privacy Links */}
             <div className="text-start mt-4 text-sm text-gray-500">
-              Read our <a href="#" className="underline hover:text-gray-700">Terms of Services</a> & <a href="#" className="underline hover:text-gray-700">Privacy Policy</a>
+              Read our{" "}
+              <a href="#" className="underline hover:text-gray-700">
+                Terms of Services
+              </a>{" "}
+              &{" "}
+              <a href="#" className="underline hover:text-gray-700">
+                Privacy Policy
+              </a>
             </div>
-
-          </div> {/* End of Form Wrapper */}
-
-        </div> {/* End of Centered Content Container */}
+          </div>{" "}
+          {/* End of Form Wrapper */}
+        </div>{" "}
+        {/* End of Centered Content Container */}
       </main>
-
     </div>
   );
 };
