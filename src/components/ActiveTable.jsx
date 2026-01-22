@@ -7,7 +7,7 @@ const ActiveTable = ({ players }) => {
   return (
     <div className="bg-[#EAEEF8] rounded-xl">
       {/* Table Header */}
-      <div className="grid grid-cols-9 text-gray-500 rounded-xl font-semibold bg-white/30 border-2 border-white p-6 text-[14px] capitalize px-2">
+      <div className="grid grid-cols-10 text-gray-500 rounded-xl font-semibold bg-white/30 border-2 border-white p-6 text-[14px] capitalize px-2">
         <input
           type="checkbox"
           className="w-6 h-6 rounded-xl place-self-center text-black bg-white border-2 border-gray-300 checked:bg-blue-600 checked:border-blue-600 focus:ring-2 focus:ring-blue-500"
@@ -18,7 +18,9 @@ const ActiveTable = ({ players }) => {
         <div className="whitespace-nowrap">Football/ Personal Character</div>
         <div className="px-20">H</div>
         <div className="px-10">W</div>
-        <div>Location</div>
+                <div>High School</div>
+        <div>State</div>
+
         <div>Committed College</div>
       </div>
 
@@ -27,7 +29,7 @@ const ActiveTable = ({ players }) => {
         <div
           key={i}
           onClick={() => navigate("/app/profile")}
-          className="grid grid-cols-9 items-center py-4 text-sm px-2 cursor-pointer hover:bg-gray-100 transition"
+          className="grid grid-cols-10 items-center py-4 text-sm px-2 cursor-pointer hover:bg-gray-100 transition"
         >
           <input
             type="checkbox"
@@ -63,7 +65,8 @@ const ActiveTable = ({ players }) => {
 
           <div className="text-gray-600 text-[13px] px-20">{p.h}</div>
           <div className="text-gray-600 text-[13px] px-10">{p.w}</div>
-          <div className="text-gray-600 text-[13px]">{p.location}</div>
+          <div className="text-gray-600 text-[13px]">{p.highschool}</div>
+          <div className="text-gray-600 text-[13px]">{p.state}</div>
 
           {/* College */}
           <div className="flex items-center gap-2">

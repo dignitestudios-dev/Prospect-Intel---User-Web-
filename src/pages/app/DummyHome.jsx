@@ -17,7 +17,8 @@ const players = [
     personal: "C-",
     h: "6’4”",
     w: "250",
-    location: "Colorado",
+    highschool: "Fairview",
+        state: "CL",
     collegeLogo: "https://placehold.co/600x400",
     collegeName: "T College Name",
   },
@@ -30,7 +31,8 @@ const players = [
     personal: "C-",
     h: "6’4”",
     w: "250",
-    location: "Colorado",
+    highschool: "Fairview",
+        state: "CL",
     collegeLogo: "https://placehold.co/600x400",
     collegeName: "T College Name",
   },
@@ -43,8 +45,8 @@ const players = [
     personal: "C-",
     h: "6’4”",
     w: "250",
-    location: "Colorado",
-    collegeLogo: "https://placehold.co/600x400",
+highschool: "Fairview",
+        state: "CL",    collegeLogo: "https://placehold.co/600x400",
     collegeName: "T College Name",
   },
   {
@@ -56,8 +58,8 @@ const players = [
     personal: "C-",
     h: "6’4”",
     w: "250",
-    location: "Colorado",
-    collegeLogo: "https://placehold.co/600x400",
+highschool: "Fairview",
+        state: "CL",    collegeLogo: "https://placehold.co/600x400",
     collegeName: "T College Name",
   },
   {
@@ -69,8 +71,8 @@ const players = [
     personal: "C-",
     h: "6’4”",
     w: "250",
-    location: "Colorado",
-    collegeLogo: "https://placehold.co/600x400",
+highschool: "Fairview",
+        state: "CL",    collegeLogo: "https://placehold.co/600x400",
     collegeName: "T College Name",
   },
   {
@@ -82,8 +84,8 @@ const players = [
     personal: "C-",
     h: "6’4”",
     w: "250",
-    location: "Colorado",
-    collegeLogo: "https://placehold.co/600x400",
+highschool: "Fairview",
+        state: "CL",    collegeLogo: "https://placehold.co/600x400",
     collegeName: "T College Name",
   },
   {
@@ -95,8 +97,8 @@ const players = [
     personal: "C-",
     h: "6’4”",
     w: "250",
-    location: "Colorado",
-    collegeLogo: "https://placehold.co/600x400",
+highschool: "Fairview",
+        state: "CL",    collegeLogo: "https://placehold.co/600x400",
     collegeName: "T College Name",
   },
   {
@@ -108,8 +110,8 @@ const players = [
     personal: "C-",
     h: "6’4”",
     w: "250",
-    location: "Colorado",
-    collegeLogo: "https://placehold.co/600x400",
+highschool: "Fairview",
+        state: "CL",    collegeLogo: "https://placehold.co/600x400",
     collegeName: "T College Name",
   },
   {
@@ -121,8 +123,9 @@ const players = [
     personal: "C-",
     h: "6’4”",
     w: "250",
-    location: "Colorado",
-    collegeLogo: "https://placehold.co/600x400",
+highschool: "Fairview",
+        state: "CL",
+            collegeLogo: "https://placehold.co/600x400",
     collegeName: "T College Name",
   },
   // Add the rest of your player data here...
@@ -132,21 +135,21 @@ const positionPills = [
   { label: "QB", active: true },
   { label: "RB", active: false },
   { label: "WR", active: false },
-  { label: "QB", active: false },
-  { label: "RB", active: false },
-  { label: "WR", active: false },
-  { label: "QB", active: false },
-  { label: "RB", active: false },
-  { label: "WR", active: false },
+  { label: "TE", active: false },
+  { label: "OL", active: false },
+  { label: "DL", active: false },
+  { label: "LB", active: false },
+  { label: "DB", active: false },
+  // { label: "WR", active: false },
 ];
 
 const gradYearPills = [
-  { label: "2020", active: true },
-  { label: "2021", active: false },
-  { label: "2022", active: false },
-  { label: "2023", active: false },
-  { label: "2024", active: true },
-  { label: "2025", active: false },
+  { label: "2027", active: true },
+  { label: "2028", active: false },
+  { label: "2029", active: false },
+  { label: "2030", active: false },
+  { label: "2031", active: true },
+  { label: "2032", active: false },
 ];
 
 const personalCharacters = [
@@ -257,8 +260,17 @@ const DummyHome = () => {
           {/* <div className="w-[300px] p-6 pt-4 border-l-2 border-gray-200"> */}
           {/* Filters Section */}
           {isArchived ? (
-            <ArchivedFilters
+            // <ArchivedFilters
+            //   positionPills={positionPills}
+            //   gradYearPills={gradYearPills}
+            //   textOne={textOne}
+            //   textTwo={textTwo}
+            //   textThree={textThree}
+            // />
+            <ActiveFilters
               positionPills={positionPills}
+              personalCharacters={personalCharacters}
+              footballCharacters={footballCharacters}
               gradYearPills={gradYearPills}
               textOne={textOne}
               textTwo={textTwo}
