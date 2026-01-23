@@ -230,8 +230,9 @@ const Profile = () => {
               <div className="flex gap-8 mt-3 whitespace-nowrap overflow-x-auto">
                 <ProfileStat label="Grad" value={p.grad} />
                 <ProfileStat label="Position" value={p.position} />
-                <ProfileStat label="State" value={p.state} />
                 <ProfileStat label="School" value={p.school} />
+                                <ProfileStat label="State" value={p.state} />
+
                 <ProfileStat label="Height" value={p.height} />
                 <ProfileStat label="Weight" value={p.weight} />
                 <ProfileStat label="GPA" value={p.gpa} />
@@ -576,10 +577,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Elite</p>
             <p className="text-white text-[16px] text-center">
-              Displays solid overall character characteristics. Teammates and
-              coaches will notice his positive traits during normal interactions
-              with this player. Could overcome potential defeciencies in some
-              areas
+             Has outstanding character with no clear character flaws. Will clearly stand out amount his teammates. Strong positive influence. He will likely overcome potential defeciencies due to this outstanding component. 
             </p>
           </div>
 
@@ -590,10 +588,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Good</p>
             <p className="text-white text-[16px] text-center">
-              Displays solid overall character characteristics. Teammates and
-              coaches will notice his positive traits during normal interactions
-              with this player. Could overcome potential defeciencies in some
-              areas
+             Displays solid overall character characteristics. Teammates and coaches will notice his positive traits during normal interactions with this player. Could overcome potential defeciencies in some areas. 
             </p>
           </div>
 
@@ -604,10 +599,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Adequate/Blend In</p>
             <p className="text-white text-[16px] text-center">
-              Displays solid overall character characteristics. Teammates and
-              coaches will notice his positive traits during normal interactions
-              with this player. Could overcome potential defeciencies in some
-              areas
+              Not necessarily a negative, but unlikely to be a positive. Average in all characteristics for the most part. This prospect possesses characteristics to survive and get by.  He will not add or subtract to the culture. This will be the bulk of prospects.
             </p>
           </div>
 
@@ -618,10 +610,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Character Deficiency</p>
             <p className="text-black text-[16px] text-center">
-              Displays solid overall character characteristics. Teammates and
-              coaches will notice his positive traits during normal interactions
-              with this player. Could overcome potential defeciencies in some
-              areas
+             Has a character defeciency. He may display negative character in flashes. May not be fatal character but will likely limit his ability to perform and develop. Teammates and coaches will notice defeciencies. 
             </p>
           </div>
 
@@ -632,10 +621,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Fatal Characteristics</p>
             <p className="text-white text-[16px] text-center">
-              Displays solid overall character characteristics. Teammates and
-              coaches will notice his positive traits during normal interactions
-              with this player. Could overcome potential defeciencies in some
-              areas
+             characteristics. Will likely fail at the next level and likely to be a distraction to his teammates and coaches. 
             </p>
           </div>
         </div>

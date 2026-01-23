@@ -140,6 +140,9 @@ const positionPills = [
   { label: "DL", active: false },
   { label: "LB", active: false },
   { label: "DB", active: false },
+  { label: "ATH", active: false },
+  { label: "SP", active: false },
+
   // { label: "WR", active: false },
 ];
 

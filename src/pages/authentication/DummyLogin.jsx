@@ -44,10 +44,10 @@ const DummyLogin = () => {
     setEmailError("");
     setPasswordError("");
 
-    if (!email || !password) {
-      ErrorToast("Please enter both email and password.");
-      return;
-    }
+    // if (!email || !password) {
+    //   ErrorToast("Please enter both email and password.");
+    //   return;
+    // }
 
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     if (!emailRegex.test(email)) {
