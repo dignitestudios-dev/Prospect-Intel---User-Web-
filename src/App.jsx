@@ -47,7 +47,7 @@ function App() {
       <Route path="app" element={<DashboardLayout />}>
         <Route path="dashboard" element={<DummyHome />} />
         <Route path="users" element={<Users />} />
-                <Route path="profile" element={<Profile />} />
+                <Route path="profile/:id" element={<Profile />} />
 
         <Route path="notifications" element={<Notifications />} />
         <Route path="user-details" element={<UserDetails />} />

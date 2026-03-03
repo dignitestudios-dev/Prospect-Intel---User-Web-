@@ -5,6 +5,7 @@ import ArchivedTable from "../../components/ArchivedTable";
 import { textOne, textThree, textTwo } from "../../assets/export";
 import ActiveFilters from "../../components/home/ActiveFilters";
 import ArchivedFilters from "../../components/home/ArchivedFilters";
+import { mockAtheleTableData } from "../../static/mockData";
 
 // Dummy data for players
 const players = [
@@ -248,14 +249,14 @@ const DummyHome = () => {
           {/* Left Side: Table & Results */}
           <div className="flex-grow p-6 pt-4 border-2 border-r border-gray-100 max-w-[calc(100%-300px)]">
             <h3 className="text-lg font-bold text-gray-800 mb-4">
-              100 Results
+              {mockAtheleTableData.length} Results
             </h3>
 
             {/* Active or Archived Table */}
             {isArchived ? (
-              <ArchivedTable players={players} />
+              <ArchivedTable players={mockAtheleTableData} />
             ) : (
-              <ActiveTable players={players} />
+              <ActiveTable players={mockAtheleTableData} />
             )}
           </div>
 

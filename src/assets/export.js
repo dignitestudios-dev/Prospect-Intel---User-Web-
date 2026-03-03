@@ -24,7 +24,11 @@ import prospectLogo from "./ProspectLogo.png";
 import textOne from "./TextIconOne.png";
 import textTwo from "./TextIconTwo.png";
 import textThree from "./TextIconThree.png";
-
+import athlete1 from "./athletePro1.png";
+import athlete2 from "./athletePro2.png";
+import athlete3 from "./athletePro3.png";
+import athlete4 from "./athletePro4.png";
+import athlete5 from "./athletePro5.png";
 // export {
 //     FILENAME(PASCALCASE)
 // }
@@ -51,4 +55,9 @@ export {
   textThree,
   textTwo,
   textOne,
+  athlete1,
+  athlete2,
+  athlete3,
+  athlete4,
+  athlete5,
 };

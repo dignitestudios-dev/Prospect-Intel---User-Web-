@@ -18,61 +18,9 @@ import {
   RequestSentPopup,
   SendMessageModal,
 } from "../../components/PopupComponents";
+import { useParams } from "react-router";
+import { mockAtheleTableData } from "../../static/mockData";
 
-// --- DUMMY DATA STRUCTURE TO MATCH IMAGE CONTENT ---
-const playerProfileData = {
-  name: "Liam O’Sullivan",
-  img: "https://i.pravatar.cc/100?img=60", // Placeholder image
-  grad: "2024",
-  position: "Scrum Half",
-  state: "California",
-  school: "School name",
-  height: "6'4\"",
-  weight: "250 LBS",
-  gpa: "2.7",
-  collegeCommitment: "College Name",
-  statusTags: ["Rookie", "Transfer", "Injuries"],
-
-  // Left Column Data
-  parents: [
-    {
-      role: "Mother",
-      name: "Tonya Nalbers",
-      occupation: "Hair stylist, Revenue Specialist / Part time hair stylist",
-      contact: "423.293.9055",
-      dob: "8/12/1962",
-    },
-    {
-      role: "Father",
-      name: "Not in Picture",
-      occupation: "Hair stylist, Revenue Specialist / Part time hair stylist",
-      contact: "423.293.9055",
-      dob: "8/12/1962",
-    },
-  ],
-  siblings: [
-    { name: "Alicia", dob: "12/12/2015" },
-    { name: "Alicia", dob: "12/12/2015" },
-  ],
-  keyInfluences:
-    "Malik has 2 trainers he relies heavily on, Donald Fusilier and Marlon Williams*.",
-
-  // Right Column Data
-  athleticBackground: {
-    otherSports: "Track, Basketball",
-    activities: "LA boosterjays club team, Attended multiple camps/combines",
-    coachEvaluation:
-      '"7v7 coach (secondary source) says Malik is extremely competitive. He mentioned that he is so competitive when something goes wrong he can get really down on himself that sometimes creates a snowball effect on following plays."',
-  },
-  footballCharacter: {
-    piScore: "A",
-    text: "Malik is an extremely competitive kid. He wants to be perfect and the best at everything he does according to his high school coaches. His coaches say he responds well and can handle tough coaching. Malik trains outside of his normal school routine. His coaches say he has great work ethic in the weight room, at practice, and preparing for games. They also say the best way for him to learn is by repetition. He has to physically run the routes on plays for him to memorize everything. He is a leader by example on the field. His coaches say if he speaks up everyone listens because he is more reserve naturally. One high school coach said during practice the offense had a pretty bad day and towards the end Malik got vocal with the team and it got everyone attention because he rarely speaks up. The coach said the last part of practice was the best part of practice they had in weeks. As noted above, multiple sources have said he is so competitive and wants to be perfect so bad that when he drops a pass or something goes wrong it looks like he is pouting, but he is just down on himself. You won't find many more people that have a passion for the game as he does. His teammates look up to him and say he is a good team player. He cares about winning. Another example coaches gave about his football character was in a game last season he sprained his ankle but refused to leave the game and played through it. He did not miss any time after that game either. Coaches say he is an extremely tough kid on the field.",
-  },
-  personalCharacter: {
-    piScore: "C-",
-    text: "Malik has a reserve personality. It takes him a while to open up to people because he doesn’t trust a lot of people according to multiple secondary sources. He is not going to be an academically focused kid but loves football enough to get the job done when it comes to being eligible to play. He has a couple od trainers who have been pulling him in different directions when it comes to his recruitment and so money is going to be a factor because the trainers are looking for money and Malik is going to lean on them heavily when making a decision. Malik is also a very “Man of your word” kind of guy meaning if you say something and it is not true or you do not follow thru with what you say then he will likely never trust you again according to secondary sources. He comes from a single parent household with not a ton of structure. He does not have a history of off the field issues or has friends who are bad influences but does get influenced from people who gains his trust which could be good or bad depending on who that may be.",
-  },
-};
 // --- END DUMMY DATA ---
 
 // Helper component for the Profile Header Stats (Grad, Position, Height, etc.)
@@ -98,19 +46,18 @@ const InfoBox = ({
         <span className="ml-2">{title}</span>
       </h3>
       {score && (
-  <div
-    className={`flex items-center border border-gray-300 rounded-lg p-2 ${
-      score === "A" ? "bg-[#131212]" : "bg-[#909090]"
-    }`}
-  >
-    <span className="text-xs font-semibold text-white mr-2">
-      PI Score
-    </span>
-    <span className="text-xl font-bold text-white">
-      {score}
-    </span>
-  </div>
-)}
+        <div
+          className={`flex items-center border border-gray-300 rounded-lg p-2 ${score === "A" ? "bg-[#131212]" : "bg-[#909090]"
+            }`}
+        >
+          <span className="text-xs font-semibold text-white mr-2">
+            PI Score
+          </span>
+          <span className="text-xl font-bold text-white">
+            {score}
+          </span>
+        </div>
+      )}
 
     </div>
     <div className="p-6 rounded-xl shadow-sm mb-6 border-2 border-white">
@@ -124,9 +71,8 @@ const InfoRow = ({ label, value, isBold = false }) => (
   <div className="flex justify-between py-1">
     <span className="text-gray-600 text-sm">{label}:</span>
     <span
-      className={`text-gray-900 text-sm ${
-        isBold ? "font-semibold" : "font-normal"
-      }`}
+      className={`text-gray-900 text-sm ${isBold ? "font-semibold" : "font-normal"
+        }`}
     >
       {value}
     </span>
@@ -150,6 +96,62 @@ const AthleticBox = ({ title, icon, children }) => (
 );
 
 const Profile = () => {
+  const { id } = useParams();
+  const athlete = mockAtheleTableData.find(a => a.id === id);
+  // --- DUMMY DATA STRUCTURE TO MATCH IMAGE CONTENT ---
+  const playerProfileData = {
+    name: athlete?.name,
+    img: athlete?.image, // Placeholder image
+    grad: athlete.grad,
+    position: athlete.position,
+    state: athlete?.state,
+    school: athlete?.school,
+    height: athlete?.height,
+    weight: athlete?.weight || "0.0",
+    gpa: athlete?.gpa || "0.0",
+    collegeCommitment: athlete?.commitment || "N/A",
+    statusTags: athlete?.statusTags || [],
+
+    // Left Column Data
+    parents: [
+      {
+        role: "Mother",
+        name: athlete.family.mother.name || "N/A",
+        occupation: athlete.family.mother.occupation || "N/A",
+        contact: athlete.family.mother.phone || "--------",
+        dob: athlete.family.mother.dob || "N/A",
+      },
+      {
+        role: "Father",
+        name: athlete.family.father.name || "N/A",
+        occupation: athlete.family.father.occupation || "N/A",
+        contact: athlete.family.father.phone || "--------",
+        dob: athlete.family.father.dob || "N/A",
+      },
+    ],
+    siblings: [
+      { name: athlete.family.siblings?.name || "N/A", dob: athlete.family.siblings?.dob || "N/A" },
+
+    ],
+    keyInfluences:
+      athlete.family.keyInfluences || "N/A",
+
+    // Right Column Data
+    athleticBackground: {
+      // otherSports: a,
+      activities: athlete.athleticBackground.activities || "N/A",
+      coachEvaluation:
+        athlete.athleticBackground.coachEvaluation || "N/A",
+    },
+    footballCharacter: {
+      piScore: athlete.footballCharacter.grade || "N/A",
+      text: athlete.footballCharacter.summary || "N/A",
+    },
+    personalCharacter: {
+      piScore: athlete.personalCharacter.grade || "N/A",
+      text: athlete.personalCharacter.summary || "N/A",
+    },
+  };
   const p = playerProfileData;
 
   // State to control Pop-up/Modal visibility
@@ -231,7 +233,7 @@ const Profile = () => {
                 <ProfileStat label="Grad" value={p.grad} />
                 <ProfileStat label="Position" value={p.position} />
                 <ProfileStat label="School" value={p.school} />
-                                <ProfileStat label="State" value={p.state} />
+                <ProfileStat label="State" value={p.state} />
 
                 <ProfileStat label="Height" value={p.height} />
                 <ProfileStat label="Weight" value={p.weight} />
@@ -378,16 +380,18 @@ const Profile = () => {
                       <span className="mr-2">🏅 Other Sports</span>
 
                       <div className="flex space-x-2">
-                        {p.athleticBackground.otherSports
-                          .split(", ")
-                          .map((sport) => (
+                        {athlete?.athleticBackground?.otherSports?.length > 0 ? (
+                          athlete.athleticBackground.otherSports.map((sport, index) => (
                             <span
-                              key={sport}
+                              key={index}
                               className="px-3 py-1 border-2 border-blue-400 text-black rounded-md text-xs font-medium bg-transparent"
                             >
                               {sport}
                             </span>
-                          ))}
+                          ))
+                        ) : (
+                          <span className="text-gray-500 text-sm">N/A</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -399,7 +403,7 @@ const Profile = () => {
                     </div>
 
                     <p className="text-gray-800 text-sm leading-relaxed">
-                      {p.athleticBackground.activities}
+                      {p.athleticBackground.activities || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -411,7 +415,7 @@ const Profile = () => {
                   </div>
 
                   <p className="text-gray-600 text-sm leading-relaxed italic">
-                    {p.athleticBackground.coachEvaluation}
+                    {p.athleticBackground.coachEvaluation || "N/A"}
                   </p>
                 </div>
               </div>
@@ -453,14 +457,7 @@ const Profile = () => {
               icon={<img src={other} alt="Other" className="text-[#7A4D8B]" />}
             >
               <p className="text-gray-700 text-sm italic ">
-                Malik started off at Comeaux HS then transferred because
-                trainers convinced him that is not a good offense to play in
-                going into his senior year. He got ruled ineligible because he
-                did not live in that district and will miss his senior year of
-                football. Overall, Malik is very competitive to the point where
-                it comes off very edgy. He is a little rough around the edges
-                but is a tough kid that will battle through any adversity to get
-                what he needs done on the field.{" "}
+                {athlete.otherRelevantInfo.summary || "N/A"}
               </p>
             </InfoBox>
           </div>
@@ -480,18 +477,16 @@ const Profile = () => {
             </h2>
 
             <ul className="space-y-4">
-              {[
-                "Exceptional speed and agility on the field, making quick plays.",
-                "Great passing accuracy, ensuring smooth ball transition to teammates.",
-                "Excellent tackling skills, consistently stopping opponents.",
-                "High level of physical fitness and stamina, enduring long matches.",
-                "Strong leadership qualities, guiding and motivating the team.",
-              ].map((item, i) => (
-                <li key={i} className="flex items-start text-gray-700 ">
-                  <span className="text-blue-600 h-8 mr-3">✦</span>
-                  {item}
-                </li>
-              ))}
+              {athlete?.strengths && athlete.strengths.length > 0 ? (
+                athlete.strengths.map((item, i) => (
+                  <li key={i} className="flex items-start text-gray-700 ">
+                    <span className="text-blue-600 h-8 mr-3">✦</span>
+                    {item}
+                  </li>
+                ))
+              ) : (
+                <li className="text-gray-500">No strengths listed.</li>
+              )}
             </ul>
           </div>
 
@@ -502,18 +497,16 @@ const Profile = () => {
             </h2>
 
             <ul className="space-y-4">
-              {[
-                "Prone to injuries, especially during high-intensity matches.",
-                "Needs improvement in reacting swiftly to unexpected plays.",
-                "Can be predictable in passing, needs more varied techniques.",
-                "Struggles with maintaining focus towards the end of the game.",
-                "Limited experience in diverse weather conditions affecting play.",
-              ].map((item, i) => (
-                <li key={i} className="flex items-start text-gray-700">
-                  <span className="text-red-500 mr-3">✚</span>
-                  {item}
-                </li>
-              ))}
+              {athlete?.weaknesses && athlete.weaknesses.length > 0 ? (
+                athlete.weaknesses.map((item, i) => (
+                  <li key={i} className="flex items-start text-gray-700">
+                    <span className="text-red-500 mr-3">✚</span>
+                    {item}
+                  </li>
+                ))
+              ) : (
+                <li className="text-gray-500">No weaknesses listed.</li>
+              )}
             </ul>
           </div>
         </div>
@@ -530,7 +523,7 @@ const Profile = () => {
           <div className="bg-[#0F0F0F] text-white p-10 rounded-xl shadow-lg">
             <div className="flex items-center justify-center mb-4">
               <div className="w-12 h-12 flex items-center justify-center rounded-lg border-white/50 text-white text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
-                A
+                {athlete?.footballCharacter.grade || "N/A"}
               </div>
             </div>
 
@@ -539,10 +532,7 @@ const Profile = () => {
             </h3>
 
             <p className="text-center text-sm opacity-90 leading-relaxed">
-              Elite. Has outstanding character with no clear character flaws.
-              Will clearly stand out amount his teammates. Strong positive
-              influence. He will likely overcome potential deficiencies due to
-              this outstanding component.
+              {athlete.footballCharacter.summary || "N/A"}
             </p>
           </div>
 
@@ -550,7 +540,7 @@ const Profile = () => {
           <div className="bg-[#909090] text-white p-10 rounded-xl shadow-lg">
             <div className="flex items-center justify-center mb-4">
               <div className="w-12 h-12 flex items-center justify-center rounded-lg  text-white text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
-                C-
+                {athlete?.personalCharacter.grade || "N/A"}
               </div>
             </div>
 
@@ -559,11 +549,8 @@ const Profile = () => {
             </h3>
 
             <p className="text-center text-sm leading-relaxed opacity-90">
-              Adequate/Blend In. Not necessarily a negative, but unlikely to be
-              a positive. Average in all characteristics for the most part. This
-              prospect possesses characteristics to survive and get by. He will
-              not add or subtract to the culture. This will be the bulk of
-              prospects.
+              {athlete.personalCharacter.summary || "N/A"}
+
             </p>
           </div>
         </div>
@@ -577,7 +564,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Elite</p>
             <p className="text-white text-[16px] text-center">
-             Has outstanding character with no clear character flaws. Will clearly stand out amount his teammates. Strong positive influence. He will likely overcome potential defeciencies due to this outstanding component. 
+              ------
             </p>
           </div>
 
@@ -588,7 +575,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Good</p>
             <p className="text-white text-[16px] text-center">
-             Displays solid overall character characteristics. Teammates and coaches will notice his positive traits during normal interactions with this player. Could overcome potential defeciencies in some areas. 
+              ---
             </p>
           </div>
 
@@ -599,7 +586,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Adequate/Blend In</p>
             <p className="text-white text-[16px] text-center">
-              Not necessarily a negative, but unlikely to be a positive. Average in all characteristics for the most part. This prospect possesses characteristics to survive and get by.  He will not add or subtract to the culture. This will be the bulk of prospects.
+              ---
             </p>
           </div>
 
@@ -610,7 +597,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Character Deficiency</p>
             <p className="text-black text-[16px] text-center">
-             Has a character defeciency. He may display negative character in flashes. May not be fatal character but will likely limit his ability to perform and develop. Teammates and coaches will notice defeciencies. 
+              ---
             </p>
           </div>
 
@@ -621,7 +608,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Fatal Characteristics</p>
             <p className="text-white text-[16px] text-center">
-             characteristics. Will likely fail at the next level and likely to be a distraction to his teammates and coaches. 
+              ---
             </p>
           </div>
         </div>
