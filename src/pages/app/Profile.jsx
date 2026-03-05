@@ -129,10 +129,12 @@ const Profile = () => {
         dob: athlete.family.father.dob || "N/A",
       },
     ],
-    siblings: [
-      { name: athlete.family.siblings?.name || "N/A", dob: athlete.family.siblings?.dob || "N/A" },
+    
+siblings: athlete?.family?.siblings?.length
+  ? athlete.family.siblings
+  : [{ name: "N/A", dob: "N/A" }],
 
-    ],
+
     keyInfluences:
       athlete.family.keyInfluences || "N/A",
 
@@ -357,7 +359,7 @@ const Profile = () => {
                   <img src={features} alt="Features" className="mr-2 text-xl" />
                   Key Influences
                 </h2>
-                <p className="text-gray-700 text-sm italic mt-4">
+                <p className="text-gray-700 text-sm mt-4">
                   {p.keyInfluences}
                 </p>
               </div>
@@ -414,7 +416,7 @@ const Profile = () => {
                     <span className="mr-2">⚡</span> Coach Evaluation
                   </div>
 
-                  <p className="text-gray-600 text-sm leading-relaxed italic">
+                  <p className="text-gray-600 text-sm leading-relaxed">
                     {p.athleticBackground.coachEvaluation || "N/A"}
                   </p>
                 </div>
@@ -456,7 +458,7 @@ const Profile = () => {
               title="Other Relevant Information"
               icon={<img src={other} alt="Other" className="text-[#7A4D8B]" />}
             >
-              <p className="text-gray-700 text-sm italic ">
+              <p className="text-gray-700 text-sm  ">
                 {athlete.otherRelevantInfo.summary || "N/A"}
               </p>
             </InfoBox>

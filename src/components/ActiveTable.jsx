@@ -5,6 +5,23 @@ import { mockAtheleTableData } from "../static/mockData";
 const ActiveTable = ({ players }) => {
   const navigate = useNavigate();
 
+  const gradeBgMap = {
+  A: "bg-black text-white",
+  "A-": "bg-black text-white",
+
+  B: "bg-[#1DB863] text-white",
+  "B+": "bg-[#1DB863] text-white",
+  "B-": "bg-[#1DB863] text-white",
+
+  C: "bg-[#B5B5B5] text-white",
+  "C+": "bg-[#B5B5B5] text-white",
+  "C-": "bg-[#B5B5B5] text-white",
+
+  D: "bg-[#F9C933] text-black",
+
+  F: "bg-[#FF3A3A] text-white",
+};
+
   return (
     <div className="bg-[#EAEEF8] rounded-xl">
       {/* Table Header */}
@@ -56,13 +73,20 @@ const ActiveTable = ({ players }) => {
 
           {/* Scores */}
           <div className="flex gap-3 px-4 items-center">
-            <span className="flex items-center border-2 justify-center w-10 h-10 bg-black text-white rounded-xl font-bold text-[14px]">
-              {p.footballCharacter.grade || "N/A"}
-            </span>
-            <span className="flex items-center justify-center w-10 h-10 border-2 bg-[#909090] text-white rounded-xl font-bold text-[14px]">
-              {p.personalCharacter.grade ? p.personalCharacter.grade : "N/A"}
-            </span>
-          </div>
+  <span
+    className={`flex items-center border-2 justify-center w-10 h-10 rounded-xl font-bold text-[14px] 
+    ${gradeBgMap[p.footballCharacter.grade] || "bg-gray-400 text-white"}`}
+  >
+    {p.footballCharacter.grade || "N/A"}
+  </span>
+
+  <span
+    className={`flex items-center justify-center w-10 h-10 border-2 rounded-xl font-bold text-[14px] 
+    ${gradeBgMap[p.personalCharacter.grade] || "bg-gray-400 text-white"}`}
+  >
+    {p.personalCharacter.grade || "N/A"}
+  </span>
+</div>
 
           <div className="text-gray-600 text-[13px] px-20">{p.height || "N/A"}</div>
           <div className="text-gray-600 text-[13px] px-10">{p.weight || "N/A"}</div>

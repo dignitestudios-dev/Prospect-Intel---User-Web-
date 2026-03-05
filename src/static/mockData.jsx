@@ -24,7 +24,7 @@ export const mockAtheleTableData = [
                 "dob": "10/28/78"
             },
             "father": {
-                "name": "Derick Williams",
+                "name": "Derick Williams (Step Father)",
                 "relation": "Stepfather",
                 "phone": "225-205-1210",
                 "occupation": "Operator",
@@ -109,9 +109,9 @@ export const mockAtheleTableData = [
         },
 
         "athleticBackground": {
-            "otherSports": ["Coastline Stars 7v7 team member"],
+            "otherSports": ["Basketball, Track"],
             "coachEvaluation": "On field, source says colleges should know he is versatile enough to be inside and outside…which not many people can do at his size. HC says he is the best WR he has seen in HS in his career. Has developed upper body during offseason.",
-            "activities": ["Basketball, Track"]
+            "activities": [ "Coastline Stars 7v7 team member"]
         },
 
         "footballCharacter": {
@@ -180,12 +180,12 @@ export const mockAtheleTableData = [
                 {
                     "type": "Brother",
                     "name": "Xavier McDonald",
-                    "dob": "------"
+                    "dob": "11/14"
                 },
                 {
                     "type": "Sister",
                     "name": "Tynazia Mcbeth",
-                    "dob": "------"
+                    "dob": " 9/26"
                 }
             ],
             "keyInfluences": " Mom and dad are not together but both live in town. He lives with Dad most of the time. Dad works for a custodial company that works for the school. Mom works for local chicken plant. Coach says dad keeps him on the straight and narrow. Parents have been really supportive. His brother Xavier signed with JMU December 2025. Biggest influence for kid is his cousin Elijah McDonald, who is also the OC for Morton HS. "
