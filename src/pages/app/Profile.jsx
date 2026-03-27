@@ -225,7 +225,6 @@ const Profile = () => {
     ],
     siblings: [
       { name: athlete?.family?.siblings?.name || "N/A", dob: athlete?.family?.siblings?.dob || "N/A" },
-
       keyInfluences: athlete?.family?.keyInfluences || "N/A",
     ],
     // Right Column Data
