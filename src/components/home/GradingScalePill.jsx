@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-export const GradingScalePill = ({ label, active }) => {
+export const GradingScalePill = ({ label, active, onClick }) => {
   let pillColor = "";
 
   // Set pill color based on the label
@@ -27,6 +27,7 @@ export const GradingScalePill = ({ label, active }) => {
   // Apply active state styles on top of the label-based styles
   return (
     <button
+      onClick={onClick}
       className={`py-2 rounded-lg text-xs font-semibold transition-colors border w-[34px] h-[34px] 
             ${pillColor} ${active ? "opacity-100" : "opacity-50"}`}
     >
