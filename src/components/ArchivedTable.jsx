@@ -46,7 +46,7 @@ const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
                 title: "Opened Player Profile",
                 description: "Opened Player Profile",
                 metaData: {
-                  type:"ProfileView",
+                  type: "ProfileView",
                   athleteImg: p.basicInfo?.image,
                   athleteName: p?.basicInfo?.name
                 },
@@ -80,8 +80,8 @@ const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
             <div className="text-gray-600 text-[13px]">{p.basicInfo?.schoolName || "N/A"}</div>
             <div className="text-gray-600 text-[13px]">{p.basicInfo?.state || "N/A"}</div>
             <div className="flex items-center gap-2">
-              <img src={p.basicInfo?.committedCollege?.logo || "https://placehold.co/400"} alt="College Logo" className="w-5 h-5 object-contain" />
-              <span className="text-xs text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">{p.basicInfo?.committedCollege?.name || "N/A"}</span>
+              <img src={p.basicInfo?.committedCollege?.logo || "https://placehold.co/400"} alt="College Logo" className="w-[30px] h-[30px] object-contain" />
+              <span className="text-[14px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">{p.basicInfo?.committedCollege?.name || "N/A"}</span>
             </div>
           </div>
         ))}

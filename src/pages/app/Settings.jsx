@@ -1,14 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import { useNavigate } from "react-router"; // Use 'react-router-dom' for useNavigate
+import { useNavigate } from "react-router";
 import { getProfile } from '../../lib/query/queryFn';
 import { formatDate } from '../../lib/helpers';
 import axiosinstance from '../../axios';
 import { ErrorToast, SuccessToast } from '../../components/global/Toaster';
+import { useAppDispatch } from '../../lib/store/hook';
+import { login } from '../../lib/store/feature/authSlice';
+import Cookies from 'js-cookie';
+
 
 
 export default function SettingsPage() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [saveLoading, setSaveLoading] = useState(false)
   const [name, setName] = useState('')
 
@@ -40,9 +45,17 @@ export default function SettingsPage() {
       })
       if (response?.status === 200) {
         SuccessToast(response?.data?.message)
+        const updatedUser = response?.data?.data;
+        console.log(updatedUser)
+
+        dispatch(login({
+          token: Cookies.get("userToken"),
+          user: updatedUser
+        }));
         refetch()
       }
     } catch (err) {
+      console.log(err, "err")
       ErrorToast(err?.response?.data?.message)
     } finally {
       setSaveLoading(false)
@@ -99,7 +112,7 @@ export default function SettingsPage() {
           ) : (
             <>
               <h2 className="text-xl font-semibold text-gray-800 mb-1">Profile</h2>
-              <p className="text-gray-500">Change your email and username</p>
+              <p className="text-gray-500">Change your username</p>
 
               <hr className="my-6 border-gray-200" />
 
