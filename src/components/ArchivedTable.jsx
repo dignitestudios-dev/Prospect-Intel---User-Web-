@@ -4,11 +4,13 @@ import { TableSkeleton } from "./global/Skeleton";
 import Pagination from "./global/Pagination";
 import { useAppDispatch } from "../lib/store/hook";
 import { logActivity } from "../lib/store/actions/activityActions";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination?.totalPages) {
@@ -52,11 +54,12 @@ const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
                 },
               })
             );
+            queryClient.invalidateQueries(["athlete", p?._id])
             navigate(`/app/profile/${p?._id}`)
           }} className="grid cursor-pointer grid-cols-10 items-center py-4 text-sm px-2">
             <input type="checkbox" className="w-6 h-6 place-self-center text-black rounded " />
             <div className="flex items-center gap-3">
-              <img src={p.basicInfo?.image} alt={p.basicInfo?.name} className="w-8 h-8 rounded-full border border-gray-200" />
+              <img src={p.basicInfo?.image || "https://placehold.co/400"} alt={p.basicInfo?.name} className="w-8 h-8 rounded-full border border-gray-200" />
               <span className="font-medium text-gray-800 text-[13px] whitespace-nowrap">{p.basicInfo?.name}</span>
             </div>
             <div className="text-gray-600 text-[13px] px-12">  {p.basicInfo?.gradYear}</div>
@@ -68,10 +71,10 @@ const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
               <span className="flex items-center justify-center w-10 h-10 border-2 border-[#FFC145] bg-white text-[#FFC145] rounded-md font-bold text-[18px]">
                 {p.personal}
               </span> */}
-              <span className="flex items-center border-2 justify-center w-10 h-10 bg-black text-white rounded-xl font-bold text-[18px]">
+              <span className="flex items-center justify-center border-2 bg-black text-white rounded-xl font-bold text-[16px] px-3 py-2 min-w-[3rem]">
                 {p.athlete?.footballPiScore}
               </span>
-              <span className="flex items-center justify-center w-10 h-10 border-2  bg-[#909090] text-white rounded-xl font-bold text-[18px]">
+              <span className="flex items-center justify-center border-2 bg-[#909090] text-white rounded-xl font-bold text-[16px] px-3 py-2 min-w-[3rem]">
                 {p.athlete?.personalPiScore}
               </span>
             </div>

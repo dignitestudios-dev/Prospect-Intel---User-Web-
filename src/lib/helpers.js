@@ -6,9 +6,9 @@ export const formatDate = (date) => {
 
   const d = new Date(date);
 
-  return d.toLocaleDateString("en-GB", {
-    day: "2-digit",
+  return d.toLocaleDateString("en-US", {
     month: "short",
+    day: "2-digit",
     year: "numeric",
   });
 };

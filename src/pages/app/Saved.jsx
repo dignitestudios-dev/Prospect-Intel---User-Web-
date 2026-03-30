@@ -75,7 +75,7 @@ const Saved = () => {
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={p.basicInfo?.image}
+                          src={p.basicInfo?.image || "https://placehold.co/400"}
                           alt={p.basicInfo?.name}
                           className="w-8 h-8 rounded-full border"
                         />
@@ -111,9 +111,22 @@ const Saved = () => {
 
 
                     <td className="p-3 text-center">
-                      <span className="py-1 px-3 text-xs rounded-full bg-red-200 text-red-800 font-semibold">
-                        {p.basicInfo?.status || "N/A"}
-                      </span>
+                      {p.basicInfo?.status?.length > 0 ? (
+                        <div className="flex flex-wrap justify-center gap-1">
+                          {p.basicInfo.status.map((tag, idx) => (
+                            <span
+                              key={idx}
+                              className="py-1 px-2 text-[10px] rounded-full bg-red-200 text-red-800 font-semibold"
+                            >
+                              {tag.toUpperCase()}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="py-1 px-2 text-[10px] rounded-full bg-gray-200 text-gray-500 font-semibold">
+                          N/A
+                        </span>
+                      )}
                     </td>
 
 

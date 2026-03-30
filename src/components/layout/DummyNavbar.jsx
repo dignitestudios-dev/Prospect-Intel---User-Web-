@@ -9,7 +9,7 @@ import { logout } from "../../lib/store/feature/authSlice";
 import { logActivity } from "../../lib/store/actions/activityActions";
 import { getNotification, getNotificationCount } from "../../lib/query/queryFn";
 import { useQuery } from "@tanstack/react-query";
-import { timeAgo } from "../../lib/helpers";
+import { formatDate, timeAgo } from "../../lib/helpers";
 import Pagination from "../global/Pagination";
 import axiosinstance from "../../axios";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
@@ -167,7 +167,7 @@ const DummyNavbar = () => {
         <div className="bg-white rounded-full p-1.5">
           <span className="text-sm font-semibold text-[#0085CA]">PRO</span>
           <span className="text-xs font-extralight text-gray-500 ml-2">
-            Ending on 20 Dec 2026
+             (Ending on {formatDate(user?.subscriptionEndDate)})
           </span>
         </div>
       </div>

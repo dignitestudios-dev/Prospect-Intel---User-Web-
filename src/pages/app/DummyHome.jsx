@@ -37,19 +37,41 @@ const gradYearPills = [
 ];
 
 const personalCharacters = [
+  { label: "A+" },
   { label: "A" },
+  { label: "A-" },
+  { label: "B+" },
   { label: "B" },
+  { label: "B-" },
+  { label: "C+" },
   { label: "C" },
+  { label: "C-" },
+  { label: "D+" },
   { label: "D" },
+  { label: "D-" },
+  { label: "F+" },
   { label: "F" },
+  { label: "F-" },
+  { label: "N/A" },
 ];
 
 const footballCharacters = [
-  { label: "A", },
-  { label: "B", },
-  { label: "C", },
-  { label: "D", },
-  { label: "F", },
+   { label: "A+" },
+  { label: "A" },
+  { label: "A-" },
+  { label: "B+" },
+  { label: "B" },
+  { label: "B-" },
+  { label: "C+" },
+  { label: "C" },
+  { label: "C-" },
+  { label: "D+" },
+  { label: "D" },
+  { label: "D-" },
+  { label: "F+" },
+  { label: "F" },
+  { label: "F-" },
+  { label: "N/A" },
 ];
 export const locationData = {
   Colorado: ["Denver", "Boulder", "Aurora"],

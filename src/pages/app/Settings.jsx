@@ -156,10 +156,10 @@ export default function SettingsPage() {
 
               <hr className="my-6 border-gray-200" />
 
-              <div className="mb-6">
+              {/* <div className="mb-6">
                 <h3 className="text-gray-500 text-sm mb-1">Phone</h3>
                 <p className="text-gray-800">{data?.phone || "N/A"}</p>
-              </div>
+              </div> */}
 
               <hr className="my-6 border-gray-200" />
 

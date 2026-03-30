@@ -394,10 +394,18 @@ const Profile = () => {
                 <ProfileStat label="School" value={athleteDetail?.basicInfo?.schoolName} />
                 <ProfileStat label="State" value={athleteDetail?.basicInfo?.state} />
 
-                <ProfileStat label="Height" value={athleteDetail?.basicInfo?.height} />
-                <ProfileStat label="Weight" value={athleteDetail?.basicInfo?.weight} />
+                <ProfileStat label="Height" value={` ${athleteDetail?.basicInfo?.height} Feet`} />
+                <ProfileStat label="Weight" value={` ${athleteDetail?.basicInfo?.weight} lbs`} />
                 <ProfileStat label="GPA" value={athleteDetail?.basicInfo?.gpa} />
-                <ProfileStat label="Commitment" value={athleteDetail?.basicInfo?.committedCollege?.name} />
+                {/* <ProfileStat label="Commitment" value={athleteDetail?.basicInfo?.committedCollege?.name} /> */}
+                <div className="flex flex-col items-center">
+                  <span className="text-gray-500 text-[28px] font-semibold">Commitment</span>
+                  <div className="flex gap-2 items-center">
+
+                    <img src={athleteDetail?.basicInfo?.committedCollege?.logo || "https://placehold.co/400"} alt="College Logo" className="w-[20px] h-[20px] object-contain" />
+                    <span className="text-gray-900 text-[14px] font-bold">{athleteDetail?.basicInfo?.committedCollege?.name}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -435,6 +443,21 @@ const Profile = () => {
               </button>
             </div>
           </div>
+        </div>
+        <div className="flex flex-wrap gap-2 mx-10">
+          {athleteDetail?.basicInfo?.status?.length ? (
+            athleteDetail.basicInfo.status.map((tag, index) => (
+              <span
+                key={index}
+                className="flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full border bg-gray-100 text-gray-600"
+              >
+                <span className="w-2 h-2 rounded-full bg-gray-500"></span>
+                {tag.toUpperCase()}
+              </span>
+            ))
+          ) : (
+            <div className="text-gray-400 text-sm">No Status Tags</div>
+          )}
         </div>
       </div>
 

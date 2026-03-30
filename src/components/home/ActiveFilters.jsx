@@ -128,7 +128,7 @@ export default function ActiveFilters({
 
 
             {isOpen && (
-              <div className="absolute z-10 pb-4 px-2 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+              <div className="absolute z-10 pb-4 pe-2 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
                 {schoolLoading ? (
                   <div className="p-3 space-y-2">
                     {Array.from({ length: 5 }).map((_, i) => (
