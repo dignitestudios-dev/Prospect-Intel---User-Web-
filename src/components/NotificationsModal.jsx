@@ -7,8 +7,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const handleCreate = () => {
-    // Handle create logic here
-    console.log({ title, description });
+
     onClose();
   };
 

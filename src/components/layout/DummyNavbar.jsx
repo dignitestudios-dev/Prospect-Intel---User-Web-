@@ -132,7 +132,7 @@ const DummyNavbar = () => {
 
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= data?.pagination?.pagination?.totalPages) {
+    if (newPage >= 1 && newPage <= data?.pagination?.totalPages) {
       setPage(newPage);
     }
   };
@@ -195,7 +195,7 @@ const DummyNavbar = () => {
               size={30}
             />
 
-            {isNotifOpen && <NotificationDropdown noti={data?.data} isLoading={isLoading} handleReadAll={handleReadAll} readLoading={readLoading} handlePageChange={handlePageChange} pagination={data?.pagination?.pagination} />}
+            {isNotifOpen && <NotificationDropdown noti={data?.data} isLoading={isLoading} handleReadAll={handleReadAll} readLoading={readLoading} handlePageChange={handlePageChange} pagination={data?.pagination} />}
           </div>
 
           <div
