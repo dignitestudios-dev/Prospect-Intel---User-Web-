@@ -5,6 +5,7 @@ import Pagination from "./global/Pagination";
 import { useAppDispatch } from "../lib/store/hook";
 import { logActivity } from "../lib/store/actions/activityActions";
 import { useQueryClient } from "@tanstack/react-query";
+import { Emptyimg } from "../assets/export";
 
 
 const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
@@ -59,7 +60,7 @@ const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
           }} className="grid cursor-pointer grid-cols-10 items-center py-4 text-sm px-2">
             <input type="checkbox" className="w-6 h-6 place-self-center text-black rounded " />
             <div className="flex items-center gap-3">
-              <img src={p.basicInfo?.image || "https://placehold.co/400"} alt={p.basicInfo?.name} className="w-8 h-8 rounded-full border border-gray-200" />
+              <img src={p.basicInfo?.image || Emptyimg} alt={p.basicInfo?.name} className="w-8 h-8 rounded-full border border-gray-200" />
               <span className="font-medium text-gray-800 text-[13px] truncate max-w-[150px] block">{p.basicInfo?.name}</span>
             </div>
             <div className="text-gray-600 text-[13px] px-12">  {p.basicInfo?.gradYear}</div>
@@ -83,7 +84,7 @@ const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
             <div className="text-gray-600 text-[13px]">{p.basicInfo?.schoolName || "N/A"}</div>
             <div className="text-gray-600 text-[13px]">{p.basicInfo?.state || "N/A"}</div>
             <div className="flex items-center gap-2">
-              <img src={p.basicInfo?.committedCollege?.logo || "https://placehold.co/400"} alt="College Logo" className="w-[30px] h-[30px] object-contain" />
+              <img src={p.basicInfo?.committedCollege?.logo || Emptyimg} alt="College Logo" className="w-[30px] h-[30px] object-contain" />
               <span className="text-[14px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">{p.basicInfo?.committedCollege?.name || "N/A"}</span>
             </div>
           </div>

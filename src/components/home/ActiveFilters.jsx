@@ -8,6 +8,7 @@ import { RiArrowDropDownLine } from "react-icons/ri";
 import Pagination from "../global/Pagination";
 import { locationData } from "../../pages/app/DummyHome";
 import citiesData from "../../static/us";
+import { Emptyimg } from "../../assets/export";
 
 
 export default function ActiveFilters({
@@ -154,7 +155,7 @@ export default function ActiveFilters({
                         }}
                       >
                         <img
-                          src={school.logo || "https://placehold.co/400"}
+                          src={school.logo || Emptyimg}
                           alt={school.name}
                           className="w-6 h-6 rounded-full object-cover"
                         />
@@ -197,7 +198,7 @@ export default function ActiveFilters({
               className="w-full p-2 border border-gray-300 rounded-lg text-sm"
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
-            
+
             >
               <option value="">Select City</option>
               {cities.map((city) => (

@@ -4,6 +4,7 @@ import { getAtheleteSave } from '../../lib/query/queryFn';
 import { TableSkeleton } from '../../components/global/Skeleton';
 import axiosinstance from '../../axios';
 import { ErrorToast, SuccessToast } from '../../components/global/Toaster';
+import { Emptyimg } from '../../assets/export';
 
 const Saved = () => {
   const [removeLoading, setRemoveLoading] = useState(null)
@@ -75,7 +76,7 @@ const Saved = () => {
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={p.basicInfo?.image || "https://placehold.co/400"}
+                          src={p.basicInfo?.image || Emptyimg}
                           alt={p.basicInfo?.name}
                           className="w-8 h-8 rounded-full border"
                         />

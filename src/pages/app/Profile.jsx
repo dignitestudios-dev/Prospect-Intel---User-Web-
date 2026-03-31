@@ -12,6 +12,7 @@ import {
   football,
   features,
   other,
+  Emptyimg,
 } from "../../assets/export";
 import {
   SaveSuccessPopup,
@@ -373,7 +374,7 @@ const Profile = () => {
         <div className="border-gray-200 p-8 flex items-start">
 
           <img
-            src={athleteDetail?.basicInfo?.image || "https://placehold.co/400"}
+            src={athleteDetail?.basicInfo?.image || Emptyimg}
             alt={athleteDetail?.basicInfo?.name}
             className="w-[100px] h-[100px] rounded-full shadow-xl mr-6"
           />
@@ -402,7 +403,7 @@ const Profile = () => {
                   <span className="text-gray-500 text-[28px] font-semibold">Commitment</span>
                   <div className="flex gap-2 items-center">
 
-                    <img src={athleteDetail?.basicInfo?.committedCollege?.logo || "https://placehold.co/400"} alt="College Logo" className="w-[20px] h-[20px] object-contain" />
+                    <img src={athleteDetail?.basicInfo?.committedCollege?.logo || Emptyimg} alt="College Logo" className="w-[20px] h-[20px] object-contain" />
                     <span className="text-gray-900 text-[14px] font-bold">{athleteDetail?.basicInfo?.committedCollege?.name}</span>
                   </div>
                 </div>
