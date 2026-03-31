@@ -101,7 +101,7 @@ const Login = () => {
                   value={values.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="w-full h-12 border rounded-lg px-4"
+                  className="w-full h-12 border rounded-lg px-4 text-lg tracking-widest"
                 />
                 {errors.email && touched.email && (
                   <p className="text-red-500 text-sm">{errors.email}</p>
@@ -117,9 +117,8 @@ const Login = () => {
                   value={values.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className="w-full h-12 border rounded-lg px-4"
+                  className="w-full h-12 border rounded-lg px-4 text-lg tracking-widest"
                 />
-
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}

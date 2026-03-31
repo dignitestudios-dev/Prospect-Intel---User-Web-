@@ -60,7 +60,7 @@ const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
             <input type="checkbox" className="w-6 h-6 place-self-center text-black rounded " />
             <div className="flex items-center gap-3">
               <img src={p.basicInfo?.image || "https://placehold.co/400"} alt={p.basicInfo?.name} className="w-8 h-8 rounded-full border border-gray-200" />
-              <span className="font-medium text-gray-800 text-[13px] whitespace-nowrap">{p.basicInfo?.name}</span>
+              <span className="font-medium text-gray-800 text-[13px] truncate max-w-[150px] block">{p.basicInfo?.name}</span>
             </div>
             <div className="text-gray-600 text-[13px] px-12">  {p.basicInfo?.gradYear}</div>
             <div className="text-gray-600 text-[13px]">{p.basicInfo?.position}</div>
