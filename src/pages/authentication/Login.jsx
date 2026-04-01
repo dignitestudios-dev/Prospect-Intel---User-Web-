@@ -22,62 +22,69 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleForgotClick = () => {
-    navigate("/auth/forgot-password");
+  const getUserLocation = async () => {
+    try {
+      const res = await fetch("https://ipinfo.io/json"); 
+      const data = await res.json();
+      return {
+        city: data.city || "",
+        state: data.region || "",
+      };
+    } catch (err) {
+      return { city: "", state: "" };
+    }
   };
 
-  const {
-    values,
-    handleBlur,
-    handleChange,
-    handleSubmit,
-    errors,
-    touched,
-  } = useFormik({
-    initialValues: { email: "", password: "" },
-    validationSchema: signInSchema,
 
-    onSubmit: async (values) => {
-      setLoading(true);
-      try {
-        const response = await axiosinstance.post("/user/login", {
-          email: values.email,
-          password: values.password,
-          role: "User",
-        });
+  const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
+    useFormik({
+      initialValues: { email: "", password: "" },
+      validationSchema: signInSchema,
+      onSubmit: async (values) => {
+        setLoading(true);
+        try {
+          const { city, state } = await getUserLocation();
 
-        if (response.status === 200) {
-          const data = response?.data?.data;
+          const payload = {
+            email: values.email,
+            password: values.password,
+            role: "User",
+            city,
+            state,
+          };
 
-          dispatch(
-            login({
-              token: data?.token,
-              user: data?.user,
-            })
+          const response = await axiosinstance.post("/user/login", payload);
+
+          if (response.status === 200) {
+            const data = response?.data?.data;
+
+            dispatch(
+              login({
+                token: data?.token,
+                user: data?.user,
+              })
+            );
+
+            dispatch(
+              logActivity({
+                title: "User Logged In",
+                description: "User Logged In",
+                metaData: { type: "Logged In", city, state },
+              })
+            );
+
+            SuccessToast(response.data?.message || "Login Successful");
+            navigate("/app/dashboard");
+          }
+        } catch (error) {
+          ErrorToast(
+            error?.response?.data?.message || "Login failed. Try again."
           );
-
-          dispatch(
-            logActivity({
-              title: "User Logged In",
-              description: "User Logged In",
-              metaData: {
-                type: "Logged In",
-              }
-            })
-          );
-
-          SuccessToast(response.data?.message || "Login Successful");
-          navigate("/app/dashboard");
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        ErrorToast(
-          error?.response?.data?.message || "Login failed. Try again."
-        );
-      } finally {
-        setLoading(false);
-      }
-    },
-  });
+      },
+    });
 
   return (
     <div className="min-h-screen bg-[#EAEEF8] flex flex-col w-full">
@@ -91,8 +98,6 @@ const Login = () => {
             <h2 className="text-2xl font-bold text-center mb-6">Log In</h2>
 
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-
-
               <div>
                 <input
                   type="text"
@@ -107,7 +112,6 @@ const Login = () => {
                   <p className="text-red-500 text-sm">{errors.email}</p>
                 )}
               </div>
-
 
               <div className="relative">
                 <input
@@ -131,16 +135,6 @@ const Login = () => {
                   <p className="text-red-500 text-sm">{errors.password}</p>
                 )}
               </div>
-
-
-              {/* <button
-                type="button"
-                onClick={handleForgotClick}
-                className="text-sm text-blue-500 text-left"
-              >
-                Forgot Password?
-              </button>
- */}
 
               <button
                 type="submit"

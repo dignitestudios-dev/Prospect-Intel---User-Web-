@@ -6,13 +6,18 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs";
 // export const baseUrl = "https://dev.api.prospectintelhq.com/api";
 // for Vercel
 export const baseUrl = "https://staging.api.prospectintelhq.com/api";
+
+// Device fingerprint
 let deviceFingerprint = "";
+let deviceType = /Mobi|Android/i.test(navigator.userAgent)
+  ? "Mobile"
+  : "Desktop";
+
 async function loadFingerprint() {
   const fp = await FingerprintJS.load();
   const result = await fp.get();
   deviceFingerprint = result.visitorId;
 }
-
 loadFingerprint();
 
 const axiosinstance = axios.create({
@@ -22,6 +27,7 @@ const axiosinstance = axios.create({
 
 axiosinstance.interceptors.request.use((request) => {
   const token = Cookies.get("userToken");
+
   if (!navigator.onLine) {
     ErrorToast(
       "No internet connection. Please check your network and try again.",
@@ -32,8 +38,9 @@ axiosinstance.interceptors.request.use((request) => {
   request.headers = {
     ...request.headers,
     Accept: "application/json, text/plain, */*",
-    devicemodel: deviceFingerprint,
     deviceIdentity: deviceFingerprint,
+    devicemodel: deviceFingerprint,
+    deviceType: deviceType,
     ...(token && { Authorization: `Bearer ${token}` }),
   };
 

@@ -341,7 +341,8 @@ const Profile = () => {
   }
 
 
-
+  const footballScore = athleteDetail?.athlete?.footballPiScore || "";
+  const personalScore = athleteDetail?.athlete?.personalPiScore || "";
 
 
 
@@ -719,23 +720,26 @@ const Profile = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-          <div className={` ${getGradeColor(athleteDetail?.athlete?.footballPiScore)} text-white p-10 rounded-xl shadow-lg`}>
+          <div className={` ${getGradeColor(footballScore)} text-white p-10 rounded-xl shadow-lg`}>
             <div className="flex items-center justify-center mb-4">
               <div
-                className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(athleteDetail?.athlete?.footballPiScore)}`}
+                className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(footballScore)}`}
               >
-                {["A+", "A-"].includes(athleteDetail?.athlete?.footballPiScore)
-                  ? "A"
-                  : ["B+", "B-"].includes(athleteDetail?.athlete?.footballPiScore)
-                    ? "B"
-                    : ["C+", "C-"].includes(athleteDetail?.athlete?.footballPiScore)
-                      ? "C"
-                      : ["D+", "D-"].includes(athleteDetail?.athlete?.footballPiScore)
-                        ? "D"
-                        : ""
-                        ["F+", "F-"].includes(athleteDetail?.athlete?.footballPiScore)
+                <div
+                  className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(footballScore)}`}
+                >
+                  {["A+", "A-"].includes(footballScore)
+                    ? "A"
+                    : ["B+", "B-"].includes(footballScore)
+                      ? "B"
+                      : ["C+", "C-"].includes(footballScore)
+                        ? "C"
+                        : ["D+", "D-"].includes(footballScore)
                           ? "D"
-                          : ""}
+                          : ["F+", "F-"].includes(footballScore)
+                            ? "F"
+                            : footballScore}
+                </div>
               </div>
             </div>
 
@@ -749,23 +753,26 @@ const Profile = () => {
           </div>
 
 
-          <div className={` ${getGradeColor(athleteDetail?.athlete?.personalPiScore)} text-white p-10 rounded-xl shadow-lg`}>
+          <div className={` ${getGradeColor(personalScore)} text-white p-10 rounded-xl shadow-lg`}>
             <div className="flex items-center justify-center mb-4">
               <div
-                className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(athleteDetail?.athlete?.personalPiScore)}`}
+                className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(personalScore)}`}
               >
-                {["A+", "A-"].includes(athleteDetail?.athlete?.personalPiScore)
-                  ? "A"
-                  : ["B+", "B-"].includes(athleteDetail?.athlete?.personalPiScore)
-                    ? "B"
-                    : ["C+", "C-"].includes(athleteDetail?.athlete?.personalPiScore)
-                      ? "C"
-                      : ["D+", "D-"].includes(athleteDetail?.athlete?.personalPiScore)
-                        ? "D"
-                        : ""
-                        ["F+", "F-"].includes(athleteDetail?.athlete?.personalPiScore)
+                <div
+                  className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(personalScore)}`}
+                >
+                  {["A+", "A-"].includes(personalScore)
+                    ? "A"
+                    : ["B+", "B-"].includes(personalScore)
+                      ? "B"
+                      : ["C+", "C-"].includes(personalScore)
+                        ? "C"
+                        : ["D+", "D-"].includes(personalScore)
                           ? "D"
-                          : ""}
+                          : ["F+", "F-"].includes(personalScore)
+                            ? "F"
+                            : personalScore}
+                </div>
               </div>
             </div>
 

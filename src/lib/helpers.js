@@ -21,3 +21,4 @@ export const timeAgo = (date) => {
   if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
   return `${Math.floor(diff / 86400)}d`;
 };
+
