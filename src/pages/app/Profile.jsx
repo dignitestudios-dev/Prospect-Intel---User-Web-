@@ -220,10 +220,10 @@ const Profile = () => {
       },
       {
         role: "Father",
-        name: athleteDetail?.family?.fatherName || "N/A",
-        occupation: athleteDetail?.family?.father?.occupation || "N/A",
-        contact: athleteDetail?.family?.father?.phone || "--------",
-        dob: athleteDetail?.family?.father?.dob || "N/A",
+          name: athleteDetail?.family?.fatherName || "N/A",
+          occupation: athleteDetail?.family?.fatherOccupation || "N/A",
+        contact: athleteDetail?.family?.fatherContact || "--------",
+        dob: athleteDetail?.family?.fatherDob || "N/A",
       },
     ],
     siblings: [
