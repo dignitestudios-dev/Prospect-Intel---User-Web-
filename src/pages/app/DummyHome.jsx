@@ -37,40 +37,39 @@ const gradYearPills = [
 ];
 
 const personalCharacters = [
-  { label: "A+" },
   { label: "A" },
-  { label: "A-" },
-  { label: "B+" },
+
+
   { label: "B" },
-  { label: "B-" },
-  { label: "C+" },
+
+
   { label: "C" },
-  { label: "C-" },
-  { label: "D+" },
+
+
   { label: "D" },
-  { label: "D-" },
-  { label: "F+" },
+
+
   { label: "F" },
-  { label: "F-" },
+
   { label: "N/A" },
 ];
 
 const footballCharacters = [
-   { label: "A+" },
+
   { label: "A" },
-  { label: "A-" },
-  { label: "B+" },
+
+
   { label: "B" },
-  { label: "B-" },
-  { label: "C+" },
+
+
   { label: "C" },
-  { label: "C-" },
-  { label: "D+" },
+
+
   { label: "D" },
-  { label: "D-" },
-  { label: "F+" },
+
+
   { label: "F" },
-  { label: "F-" },
+
   { label: "N/A" },
 ];
 export const locationData = {
@@ -93,7 +92,7 @@ const DummyHome = () => {
   const [cities, setCities] = useState([]);
   const [selectedGradeYear, setSelectedGradeYear] = useState('')
   const SchoolId = selectedSchool?.id || ""
-  const [status, setStatus] = useState(null); 
+  const [status, setStatus] = useState(null);
   const isActive = status === "active" ? true : status === "inactive" ? false : "";
   const debouncedSearch = useDebounce(search, 500)
 
@@ -294,6 +293,8 @@ const DummyHome = () => {
             setSelectedState={setSelectedState}
             selectedState={selectedState}
             setSelectedCity={setSelectedCity}
+            personalPiScore={personalPiScore}
+            footballPiScore={footballPiScore}
           />
 
 

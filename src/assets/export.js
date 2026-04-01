@@ -29,7 +29,7 @@ import athlete2 from "./athletePro2.png";
 import athlete3 from "./athletePro3.png";
 import athlete4 from "./athletePro4.png";
 import athlete5 from "./athletePro5.png";
-import Emptyimg from "./emptyimg.png";
+import Emptyimg from "./default.svg";
 // export {
 //     FILENAME(PASCALCASE)
 // }

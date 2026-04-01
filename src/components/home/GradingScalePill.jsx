@@ -5,28 +5,18 @@ export const GradingScalePill = ({ label, active, onClick }) => {
   // Set pill color based on the label
   switch (label) {
     case "A":
-    case "A+":
-    case "A-":
       pillColor = "bg-black text-white border-black hover:opacity-80";
       break;
     case "B":
-    case "B+":
-    case "B-":
       pillColor = "bg-green-500 text-white border-green-500 hover:opacity-80";
       break;
     case "C":
-    case "C+":
-    case "C-":
       pillColor = "bg-gray-500 text-white border-gray-500 hover:opacity-80";
       break;
     case "D":
-    case "D+":
-    case "D-":
       pillColor = "bg-yellow-500 text-black border-yellow-500 hover:opacity-80";
       break;
     case "F":
-    case "F+":
-    case "F-":
       pillColor = "bg-red-500 text-white border-red-500 hover:opacity-80";
       break;
     case "N/A":
@@ -40,8 +30,12 @@ export const GradingScalePill = ({ label, active, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`py-2 px-3 rounded-lg text-xs font-semibold transition-colors border w-[34px] h-[34px]
-        ${pillColor} ${active ? "ring-2 ring-blue-500" : "opacity-50"}`}
+      className={`py-2 rounded-lg text-xs font-semibold transition-all border w-[34px] h-[34px]
+  ${pillColor}
+  ${active
+          ? "ring-2 ring-offset-1 ring-black scale-105"
+          : "opacity-40 hover:opacity-80"
+        }`}
     >
       {label}
     </button>

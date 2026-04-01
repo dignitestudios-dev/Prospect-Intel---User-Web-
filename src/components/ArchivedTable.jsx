@@ -73,15 +73,15 @@ const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
                 {p.personal}
               </span> */}
               <span className="flex items-center justify-center border-2 bg-black text-white rounded-xl font-bold text-[16px] px-3 py-2 min-w-[3rem]">
-                {p.athlete?.footballPiScore}
+                {p.athlete?.footballPiScore || "--"}
               </span>
               <span className="flex items-center justify-center border-2 bg-[#909090] text-white rounded-xl font-bold text-[16px] px-3 py-2 min-w-[3rem]">
-                {p.athlete?.personalPiScore}
+                {p.athlete?.personalPiScore || "--"}
               </span>
             </div>
             <div className="text-gray-600 text-[13px] px-20">{p.basicInfo?.height || "N/A"}</div>
             <div className="text-gray-600 text-[13px] px-10">{p.basicInfo?.weight || "N/A"}</div>
-            <div className="text-gray-600 text-[13px]">{p.basicInfo?.schoolName || "N/A"}</div>
+            <div className="text-gray-600 text-[13px] break-all">{p.basicInfo?.schoolName || "N/A"}</div>
             <div className="text-gray-600 text-[13px]">{p.basicInfo?.state || "N/A"}</div>
             <div className="flex items-center gap-2">
               <img src={p.basicInfo?.committedCollege?.logo || Emptyimg} alt="College Logo" className="w-[30px] h-[30px] object-contain" />

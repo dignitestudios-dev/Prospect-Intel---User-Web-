@@ -34,7 +34,9 @@ export default function ActiveFilters({
   selectedCity,
   selectedState,
   setSelectedState,
-  setSelectedCity
+  setSelectedCity,
+  personalPiScore,
+  footballPiScore
 }) {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= schools?.pagination?.totalPages) {
@@ -80,6 +82,7 @@ export default function ActiveFilters({
                 key={i}
                 label={y.label}
                 onClick={() => setPersonalPiScore(y.label)}
+                active={personalPiScore === y.label}
               />
             ))}
           </div>
@@ -92,7 +95,8 @@ export default function ActiveFilters({
               <GradingScalePill
                 key={i}
                 label={y.label}
-                onClick={() => setFootBallPiScore(y)}
+                onClick={() => setFootBallPiScore(y.label)}
+                active={footballPiScore === y.label}
               />
             ))}
 

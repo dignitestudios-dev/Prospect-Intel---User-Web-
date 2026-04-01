@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router";
 import { useAppDispatch, useAuth } from "../../lib/store/hook";
 import { logout } from "../../lib/store/feature/authSlice";
 import { logActivity } from "../../lib/store/actions/activityActions";
-import { getNotification, getNotificationCount } from "../../lib/query/queryFn";
+import { getNotification, getNotificationCount, getProfile } from "../../lib/query/queryFn";
 import { useQuery } from "@tanstack/react-query";
 import { formatDate, timeAgo } from "../../lib/helpers";
 import Pagination from "../global/Pagination";
@@ -115,6 +115,13 @@ const DummyNavbar = () => {
   };
 
   const navigate = useNavigate();
+  const { data: profile } = useQuery({
+    queryKey: ["profileMe"],
+    queryFn: getProfile,
+    keepPreviousData: true,
+    staleTime: 1000 * 60 * 5,
+  });
+
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["notification", page],
     queryFn: () => getNotification({ page }),
@@ -167,7 +174,7 @@ const DummyNavbar = () => {
         <div className="bg-white rounded-full p-1.5">
           <span className="text-sm font-semibold text-[#0085CA]">PRO</span>
           <span className="text-xs font-extralight text-gray-500 ml-2">
-             (Ending on {formatDate(user?.subscriptionEndDate)})
+            (Ending on {formatDate(profile?.subscriptionEndDate)})
           </span>
         </div>
       </div>
@@ -180,9 +187,9 @@ const DummyNavbar = () => {
           <div className="relative">
 
             {/* {notificationCount?.count && ( */}
-              <span className="absolute -top-2 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                {notificationCount?.count}
-              </span>
+            <span className="absolute -top-2 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+              {notificationCount?.count}
+            </span>
             {/* )} */}
 
             <Bell

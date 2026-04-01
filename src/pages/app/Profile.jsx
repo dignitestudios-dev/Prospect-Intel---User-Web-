@@ -33,10 +33,12 @@ import { logActivity } from "../../lib/store/actions/activityActions";
 // --- END DUMMY DATA ---
 
 // Helper component for the Profile Header Stats (Grad, Position, Height, etc.)
-const ProfileStat = ({ label, value }) => (
+const ProfileStat = ({ label, value, title }) => (
   <div className="flex flex-col items-center">
     <span className="text-gray-500 text-[28px] font-semibold">{label}</span>
-    <span className="text-gray-900 text-[14px] font-bold">{value}</span>
+    <span title={title} className="text-gray-900 text-[14px] font-bold break-words truncate max-w-[150px]">
+      {value}
+    </span>
   </div>
 );
 
@@ -392,7 +394,7 @@ const Profile = () => {
               <div className="flex gap-8 mt-3 whitespace-nowrap overflow-x-auto">
                 <ProfileStat label="Grad" value={athleteDetail?.basicInfo?.gradYear} />
                 <ProfileStat label="Position" value={athleteDetail?.basicInfo?.position} />
-                <ProfileStat label="School" value={athleteDetail?.basicInfo?.schoolName} />
+                <ProfileStat label="School" title={athleteDetail?.basicInfo?.schoolName} value={athleteDetail?.basicInfo?.schoolName} />
                 <ProfileStat label="State" value={athleteDetail?.basicInfo?.state} />
 
                 <ProfileStat label="Height" value={` ${athleteDetail?.basicInfo?.height} Feet`} />
@@ -717,12 +719,23 @@ const Profile = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-          <div className="bg-[#0F0F0F] text-white p-10 rounded-xl shadow-lg">
+          <div className={` ${getGradeColor(athleteDetail?.athlete?.footballPiScore)} text-white p-10 rounded-xl shadow-lg`}>
             <div className="flex items-center justify-center mb-4">
               <div
                 className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(athleteDetail?.athlete?.footballPiScore)}`}
               >
-                {athleteDetail?.athlete?.footballPiScore || "N/A"}
+                {["A+", "A-"].includes(athleteDetail?.athlete?.footballPiScore)
+                  ? "A"
+                  : ["B+", "B-"].includes(athleteDetail?.athlete?.footballPiScore)
+                    ? "B"
+                    : ["C+", "C-"].includes(athleteDetail?.athlete?.footballPiScore)
+                      ? "C"
+                      : ["D+", "D-"].includes(athleteDetail?.athlete?.footballPiScore)
+                        ? "D"
+                        : ""
+                        ["F+", "F-"].includes(athleteDetail?.athlete?.footballPiScore)
+                          ? "D"
+                          : ""}
               </div>
             </div>
 
@@ -736,12 +749,23 @@ const Profile = () => {
           </div>
 
 
-          <div className="bg-[#909090] text-white p-10 rounded-xl shadow-lg">
+          <div className={` ${getGradeColor(athleteDetail?.athlete?.personalPiScore)} text-white p-10 rounded-xl shadow-lg`}>
             <div className="flex items-center justify-center mb-4">
               <div
                 className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(athleteDetail?.athlete?.personalPiScore)}`}
               >
-                {athleteDetail?.athlete?.personalPiScore || "N/A"}
+                {["A+", "A-"].includes(athleteDetail?.athlete?.personalPiScore)
+                  ? "A"
+                  : ["B+", "B-"].includes(athleteDetail?.athlete?.personalPiScore)
+                    ? "B"
+                    : ["C+", "C-"].includes(athleteDetail?.athlete?.personalPiScore)
+                      ? "C"
+                      : ["D+", "D-"].includes(athleteDetail?.athlete?.personalPiScore)
+                        ? "D"
+                        : ""
+                        ["F+", "F-"].includes(athleteDetail?.athlete?.personalPiScore)
+                          ? "D"
+                          : ""}
               </div>
             </div>
 
