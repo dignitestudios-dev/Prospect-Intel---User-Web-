@@ -44,17 +44,18 @@ const DropdownModal = ({ username, setIsModalOpen }) => {
   return (
     <div className="absolute right-4 mt-2 w-56 rounded-lg shadow-xl py-3 border border-gray-100 z-50  bg-[#EAEEF8]">
 
-      <div className="flex items-center gap-2 px-4 pb-3 border-b border-gray-200">
-
-
-        <div className="w-8 h-8 flex items-center justify-center">
-
-
+      <div className="flex items-center gap-2 px-4 pb-3 border-b border-gray-200 min-w-0">
+        <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
           <img src={Logo} alt="Logo" className="h-full" />
         </div>
-        <span className="text-base font-semibold text-gray-800">{username}</span>
-      </div>
 
+        <span
+          className="text-base font-semibold text-gray-800 truncate max-w-[140px]"
+          title={username}
+        >
+          {username}
+        </span>
+      </div>
 
       <p className="text-xs font-medium text-gray-500 uppercase px-4 pt-3 pb-1">
         Account

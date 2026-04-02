@@ -36,7 +36,7 @@ import { logActivity } from "../../lib/store/actions/activityActions";
 const ProfileStat = ({ label, value, title }) => (
   <div className="flex flex-col items-center">
     <span className="text-gray-500 text-[28px] font-semibold">{label}</span>
-    <span title={title} className="text-gray-900 text-[14px] font-bold break-words truncate max-w-[150px]">
+    <span className="text-gray-900 text-[14px] font-bold break-words">
       {value}
     </span>
   </div>
@@ -220,8 +220,8 @@ const Profile = () => {
       },
       {
         role: "Father",
-          name: athleteDetail?.family?.fatherName || "N/A",
-          occupation: athleteDetail?.family?.fatherOccupation || "N/A",
+        name: athleteDetail?.family?.fatherName || "N/A",
+        occupation: athleteDetail?.family?.fatherOccupation || "N/A",
         contact: athleteDetail?.family?.fatherContact || "--------",
         dob: athleteDetail?.family?.fatherDob || "N/A",
       },
@@ -392,7 +392,7 @@ const Profile = () => {
               </h1>
 
 
-              <div className="flex gap-8 mt-3 whitespace-nowrap overflow-x-auto">
+              <div className="flex gap-8 mt-3 flex-wrap">
                 <ProfileStat label="Grad" value={athleteDetail?.basicInfo?.gradYear} />
                 <ProfileStat label="Position" value={athleteDetail?.basicInfo?.position} />
                 <ProfileStat label="School" title={athleteDetail?.basicInfo?.schoolName} value={athleteDetail?.basicInfo?.schoolName} />
@@ -726,7 +726,7 @@ const Profile = () => {
                 className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(footballScore)}`}
               >
                 <div
-                  className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(footballScore)}`}
+                  className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-8 border-2 border-white ${getGradeColor(footballScore)}`}
                 >
                   {["A+", "A-"].includes(footballScore)
                     ? "A"
@@ -759,7 +759,7 @@ const Profile = () => {
                 className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(personalScore)}`}
               >
                 <div
-                  className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(personalScore)}`}
+                  className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-8 border-2 border-white ${getGradeColor(personalScore)}`}
                 >
                   {["A+", "A-"].includes(personalScore)
                     ? "A"
