@@ -82,7 +82,7 @@ const ArchivedTable = ({ players, loading, pagination, setPage, }) => {
             <div className="text-gray-600 text-[13px] px-20">{p.basicInfo?.height || "N/A"}</div>
             <div className="text-gray-600 text-[13px] px-10">{p.basicInfo?.weight || "N/A"}</div>
             <div className="text-gray-600 text-[13px] break-all">{p.basicInfo?.schoolName || "N/A"}</div>
-            <div className="text-gray-600 text-[13px]">{p.basicInfo?.state || "N/A"}</div>
+            <div className="text-gray-600 text-[13px] px-3">{p.basicInfo?.state || "N/A"}</div>
             <div className="flex items-center gap-2">
               <img src={p.basicInfo?.committedCollege?.logo || Emptyimg} alt="College Logo" className="w-[30px] h-[30px] object-contain" />
               <span className="text-[14px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">{p.basicInfo?.committedCollege?.name || "N/A"}</span>

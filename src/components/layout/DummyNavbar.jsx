@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import { IoIosLogOut } from "react-icons/io";
 import { Logo, prospectLogo } from "../../assets/export";
@@ -110,11 +110,24 @@ const DummyNavbar = () => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [readLoading, setReadLoading] = useState(false)
   const [page, setPage] = useState(1)
+  const notifRef = useRef(null);
   const { user } = useAuth();
-  const handleDropdownClick = () => {
-    setIsModalOpen(!isModalOpen);
-  };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notifRef.current &&
+        !notifRef.current.contains(event.target)
+      ) {
+        setIsNotifOpen(false);
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const navigate = useNavigate();
   const { data: profile } = useQuery({
     queryKey: ["profileMe"],
@@ -161,6 +174,7 @@ const DummyNavbar = () => {
       setReadLoading(false)
     }
   }
+
   return (
     <div className="w-full border-b border-gray-300 bg-[#EAEEF8] h-20 px-4  flex justify-between items-center">
 
@@ -203,7 +217,18 @@ const DummyNavbar = () => {
               size={30}
             />
 
-            {isNotifOpen && <NotificationDropdown noti={data?.data} isLoading={isLoading} handleReadAll={handleReadAll} readLoading={readLoading} handlePageChange={handlePageChange} pagination={data?.pagination} />}
+            {isNotifOpen && (
+              <div ref={notifRef}>
+                <NotificationDropdown
+                  noti={data?.data}
+                  isLoading={isLoading}
+                  handleReadAll={handleReadAll}
+                  readLoading={readLoading}
+                  handlePageChange={handlePageChange}
+                  pagination={data?.pagination}
+                />
+              </div>
+            )}
           </div>
 
           <div

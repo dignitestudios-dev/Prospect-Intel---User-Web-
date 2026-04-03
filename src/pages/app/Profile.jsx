@@ -513,7 +513,7 @@ const Profile = () => {
                     </h4>
                     <InfoRow label="Name" value={parent.name} isBold={true} />
                     <InfoRow label="Occupation" value={parent.occupation} />
-                    <InfoRow label="Contact" value={parent.contact} />
+                    <InfoRow label="Contact" value={`${parent.contact ? `+1 ${parent.contact}` : "N/A"}`} />
                     <InfoRow label="DOB" value={parent.dob} />
                   </div>
                 ))}
@@ -795,7 +795,7 @@ const Profile = () => {
               A
             </div>
             <p className="mt-2 font-semibold text-lg">Elite</p>
-            <p className="text-white text-[16px] text-center">
+            <p className="text-white text-[16px] text-center flex-1">
               Elite. Has outstanding character with no clear character flaws. Will clearly stand out amount his teammates. Strong positive influence. He will likely overcome potential defeciencies due to this outstanding component. (Black background: White font
             </p>
           </div>
@@ -806,7 +806,7 @@ const Profile = () => {
               B
             </div>
             <p className="mt-2 font-semibold text-lg">Good</p>
-            <p className="text-white text-[16px] text-center">
+            <p className="text-white text-[16px] text-center flex-1">
               Good. Displays solid overall character characteristics. Teammates and coaches will notice his positive traits during normal interactions with this player. Could overcome potential defeciencies in some areas.
             </p>
           </div>
@@ -817,7 +817,7 @@ const Profile = () => {
               C
             </div>
             <p className="mt-2 font-semibold text-lg">Adequate/Blend In</p>
-            <p className="text-white text-[16px] text-center">
+            <p className="text-white text-[16px] text-center flex-1 ">
               Adequate/Blend In. Not necessarily a negative, but unlikely to be a positive. Average in all characteristics for the most part. This prospect possesses characteristics to survive and get by.  He will not add or subtract to the culture. This will be the bulk of prospects.
             </p>
           </div>
@@ -828,7 +828,7 @@ const Profile = () => {
               D
             </div>
             <p className="mt-2 font-semibold text-lg">Character Deficiency</p>
-            <p className="text-black text-[16px] text-center">
+            <p className="text-black text-[16px] text-center flex-1">
               Has a character defeciency. He may display negative character in flashes. May not be fatal character but will likely limit his ability to perform and develop. Teammates and coaches will notice defeciencies.
             </p>
           </div>
@@ -839,7 +839,7 @@ const Profile = () => {
               F
             </div>
             <p className="mt-2 font-semibold text-lg">Fatal Characteristics</p>
-            <p className="text-white text-[16px] text-center">
+            <p className="text-white text-[16px] text-center flex-1">
               Fatal characteristics. Will likely fail at the next level and likely to be a distraction to his teammates and coaches.
             </p>
           </div>
