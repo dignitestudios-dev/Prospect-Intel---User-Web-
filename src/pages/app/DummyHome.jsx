@@ -4,10 +4,12 @@ import ArchivedTable from "../../components/ArchivedTable";
 import { textOne, textThree, textTwo } from "../../assets/export";
 import ActiveFilters from "../../components/home/ActiveFilters";
 import { getAthlete, getSchool } from "../../lib/query/queryFn";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import citiesData from "../../static/us";
 import { logActivity } from "../../lib/store/actions/activityActions";
 import useDebounce, { useAppDispatch } from "../../lib/store/hook";
+import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
+import axiosinstance from "../../axios";
 
 
 
@@ -78,6 +80,7 @@ export const locationData = {
 };
 const DummyHome = () => {
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [schoolPage, setSchoolPage] = useState(1)
   const [search, setSearch] = useState("")
@@ -95,6 +98,8 @@ const DummyHome = () => {
   const [status, setStatus] = useState(null);
   const isActive = status === "active" ? true : status === "inactive" ? false : "";
   const debouncedSearch = useDebounce(search, 500)
+  const [selectedIds, setSelectedIds] = useState([])
+  const [csvExportLoading, setCsvExportLoading] = useState(false)
 
 
 
@@ -181,6 +186,41 @@ const DummyHome = () => {
   }, [selectedState]);
 
 
+  const handleCSVExport = async () => {
+
+
+    setCsvExportLoading(true)
+    try {
+
+      const response = await axiosinstance.post("/athlete/export/csv", {
+        athletes: selectedIds,
+        ...(status === "active" && { isActive: true }),
+        ...(status === "inactive" && { isActive: false }),
+      })
+      if (response.status === 200) {
+        const blob = new Blob([response.data], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "athlete_templates.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        window.URL.revokeObjectURL(url);
+
+        SuccessToast("Template downloaded");
+        setSelectedIds([])
+
+      }
+    } catch (error) {
+      ErrorToast(error?.response?.data?.message)
+    } finally {
+      setCsvExportLoading(false)
+    }
+  }
+
   return (
     <div className="w-full min-h-screen h-full bg-[#F5F7FB] flex justify-center items-start font-sans ">
       <div className="w-full h-full bg-[#EAEEF8] border-2 border-gray-100 mb-2 overflow-auto">
@@ -209,13 +249,13 @@ const DummyHome = () => {
 
             {!isArchived && (
               <div className="flex items-center space-x-3">
-                <button className="flex items-center px-4 py-2 border border-white bg-[#EAEEF8] rounded-lg text-gray-700 text-sm shadow-sm hover:bg-gray-50 transition-colors">
+                {/* <button className="flex items-center px-4 py-2 border border-white bg-[#EAEEF8] rounded-lg text-gray-700 text-sm shadow-sm hover:bg-gray-50 transition-colors">
                   <FaPrint className="mr-2 text-xs" />
                   Print
-                </button>
-                <button className="flex items-center px-4 py-2 border border-white bg-[#EAEEF8] text-gray-700 rounded-lg text-sm shadow shadow-blue-200 hover:bg-gray-50 transition-colors">
+                </button> */}
+                <button onClick={handleCSVExport} className="flex items-center px-4 py-2 border border-white bg-[#EAEEF8] text-gray-700 rounded-lg text-sm shadow shadow-blue-200 hover:bg-gray-50 transition-colors">
                   <FaDownload className="mr-2 text-xs" />
-                  Download Pdf
+                  <span>{csvExportLoading ? "Exporting..." : "Export CSV"}</span>
                 </button>
               </div>
             )}
@@ -230,7 +270,13 @@ const DummyHome = () => {
                     ? "bg-white border-2 border-gray-300 text-black"
                     : "text-gray-600 hover:bg-gray-50"
                     }`}
-                  onClick={() => setStatus("active")}
+                  onClick={() => {
+                    setStatus("active")
+
+                    queryClient.invalidateQueries({
+                      queryKey: ["athlete"]
+                    })
+                  }}
                 >
                   Active
                 </button>
@@ -241,7 +287,14 @@ const DummyHome = () => {
                     ? "bg-white border-2 border-gray-300 text-black"
                     : "text-gray-600 hover:bg-gray-50"
                     }`}
-                  onClick={() => setStatus("inactive")}
+                  onClick={() => {
+                    setStatus("inactive")
+
+                    queryClient.invalidateQueries({
+                      queryKey: ["athlete"]
+                    })
+                  }}
+
                 >
                   Archived
                 </button>
@@ -260,7 +313,7 @@ const DummyHome = () => {
             </h3>
 
 
-            <ArchivedTable players={data?.data} pagination={data?.pagination} loading={isLoading} setPage={setPage} />
+            <ArchivedTable selectedIds={selectedIds} setSelectedIds={setSelectedIds} players={data?.data} pagination={data?.pagination} loading={isLoading} setPage={setPage} />
 
           </div>
 

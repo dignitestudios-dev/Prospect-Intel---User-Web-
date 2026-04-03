@@ -23,7 +23,7 @@ import { useParams } from "react-router";
 import { mockAtheleTableData } from "../../static/mockData";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAtheleteById } from "../../lib/query/queryFn";
-import { formatDate } from "../../lib/helpers";
+import { formatAthleteForCSV, formatDate } from "../../lib/helpers";
 import axiosinstance from "../../axios";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import { ProfileSkeleton } from "../../components/global/Skeleton";
@@ -345,7 +345,29 @@ const Profile = () => {
   const personalScore = athleteDetail?.athlete?.personalPiScore || "";
 
 
+  const handleDownloadCSV = () => {
+    if (!athlete) return;
 
+    const data = formatAthleteForCSV(athleteDetail);
+
+    const headers = Object.keys(data);
+    const values = Object.values(data);
+
+    const csv = [
+      headers.join(","),
+      values.map(v => `"${v ?? ""}"`).join(",")
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${athleteDetail?.basicInfo?.name}.csv`;
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  };
 
   if (isLoading) {
     return <ProfileSkeleton />;
@@ -437,30 +459,43 @@ const Profile = () => {
               </div>
 
 
-              <button className="flex items-center px-6 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 w-[270px] h-[50px] justify-center">
-                <img
-                  src="https://cdn-icons-png.flaticon.com/512/337/337946.png"
-                  alt="pdf icon"
-                  className="w-5 h-5 mr-2"
-                />
-                Download PDF
+              <button onClick={handleDownloadCSV} className="flex items-center px-6 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 w-[270px] h-[50px] justify-center">
+             
+                Download CSV
               </button>
             </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mx-10">
-          {athleteDetail?.basicInfo?.status?.length ? (
-            athleteDetail.basicInfo.status.map((tag, index) => (
-              <span
-                key={index}
-                className="flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full border bg-gray-100 text-gray-600"
-              >
-                <span className="w-2 h-2 rounded-full bg-gray-500"></span>
-                {tag.toUpperCase()}
-              </span>
-            ))
+          {athleteDetail?.basicInfo?.status?.length > 0 ? (
+            <div className="flex flex-wrap justify-center gap-1">
+              {athleteDetail?.basicInfo?.status?.map((tag, idx) => {
+                const colors = [
+                  { bg: "#FF3A44", text: "#fff" },
+                  { bg: "#3FB185", text: "#fff" },
+                  { bg: "#7A4D8B", text: "#fff" },
+                ];
+
+                const color = colors[idx % colors.length];
+
+                return (
+                  <span
+                    key={idx}
+                    className="py-1 px-2 text-[10px] rounded-full font-semibold"
+                    style={{
+                      border: `1px solid ${color.bg}`,
+                      color: 'black',
+                    }}
+                  >
+                    {tag.toUpperCase()}
+                  </span>
+                );
+              })}
+            </div>
           ) : (
-            <div className="text-gray-400 text-sm">No Status Tags</div>
+            <span className="py-1 px-2 text-[10px] rounded-full bg-gray-200 text-gray-500 font-semibold">
+              N/A
+            </span>
           )}
         </div>
       </div>
