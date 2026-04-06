@@ -369,6 +369,23 @@ const Profile = () => {
     window.URL.revokeObjectURL(url);
   };
 
+
+  const normalizeGrade = (grade) => {
+    if (!grade) return null;
+    return grade.charAt(0); // A+, A- => A
+  };
+  const gradeDescriptions = {
+    A: "Elite. Has outstanding character with no clear character flaws. Will clearly stand out among his teammates. Strong positive influence. He will likely overcome potential deficiencies due to this outstanding component.",
+
+    B: "Good. Displays solid overall character characteristics. Teammates and coaches will notice his positive traits during normal interactions with this player. Could overcome potential deficiencies in some areas.",
+
+    C: "Adequate/Blend In. Not necessarily a negative, but unlikely to be a positive. Average in all characteristics for the most part. This prospect possesses characteristics to survive and get by.",
+
+    D: "Has a character deficiency. He may display negative character in flashes. May not be fatal character but will likely limit his ability to perform and develop.",
+
+    F: "Fatal characteristics. Will likely fail at the next level and likely to be a distraction to his teammates and coaches."
+  };
+
   if (isLoading) {
     return <ProfileSkeleton />;
   }
@@ -460,7 +477,7 @@ const Profile = () => {
 
 
               <button onClick={handleDownloadCSV} className="flex items-center px-6 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 w-[270px] h-[50px] justify-center">
-             
+
                 Download CSV
               </button>
             </div>
@@ -763,17 +780,7 @@ const Profile = () => {
                 <div
                   className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-8 border-2 border-white ${getGradeColor(footballScore)}`}
                 >
-                  {["A+", "A-"].includes(footballScore)
-                    ? "A"
-                    : ["B+", "B-"].includes(footballScore)
-                      ? "B"
-                      : ["C+", "C-"].includes(footballScore)
-                        ? "C"
-                        : ["D+", "D-"].includes(footballScore)
-                          ? "D"
-                          : ["F+", "F-"].includes(footballScore)
-                            ? "F"
-                            : footballScore}
+                  {athleteDetail?.athlete?.footballPiScore}
                 </div>
               </div>
             </div>
@@ -783,7 +790,7 @@ const Profile = () => {
             </h3>
 
             <p className="text-center text-sm opacity-90 leading-relaxed">
-              {athleteDetail?.athlete?.footballDescription || "N/A"}
+              {gradeDescriptions[normalizeGrade(athleteDetail?.athlete?.footballPiScore)] || athleteDetail?.athlete?.footballDescription}
             </p>
           </div>
 
@@ -796,17 +803,7 @@ const Profile = () => {
                 <div
                   className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-8 border-2 border-white ${getGradeColor(personalScore)}`}
                 >
-                  {["A+", "A-"].includes(personalScore)
-                    ? "A"
-                    : ["B+", "B-"].includes(personalScore)
-                      ? "B"
-                      : ["C+", "C-"].includes(personalScore)
-                        ? "C"
-                        : ["D+", "D-"].includes(personalScore)
-                          ? "D"
-                          : ["F+", "F-"].includes(personalScore)
-                            ? "F"
-                            : personalScore}
+                  {athleteDetail?.athlete?.personalPiScore}
                 </div>
               </div>
             </div>
@@ -816,8 +813,7 @@ const Profile = () => {
             </h3>
 
             <p className="text-center text-sm leading-relaxed opacity-90">
-              {athleteDetail?.athlete?.personalDescription || "N/A"}
-
+              {gradeDescriptions[normalizeGrade(athleteDetail?.athlete?.personalPiScore)] || athleteDetail?.athlete?.personalDescription}
             </p>
           </div>
         </div>
@@ -831,7 +827,7 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Elite</p>
             <p className="text-white text-[16px] text-center flex-1">
-              Elite. Has outstanding character with no clear character flaws. Will clearly stand out amount his teammates. Strong positive influence. He will likely overcome potential defeciencies due to this outstanding component. (Black background: White font
+              Elite. Has outstanding character with no clear character flaws. Will clearly stand out amount his teammates. Strong positive influence. He will likely overcome potential defeciencies due to this outstanding component.
             </p>
           </div>
 
