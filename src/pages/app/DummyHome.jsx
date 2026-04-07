@@ -15,16 +15,16 @@ import axiosinstance from "../../axios";
 
 
 const positions = [
-  "Quarterback",
-  "Running Back",
-  "Wide Receiver",
-  "Tight End",
-  "Offensive Line",
-  "Defensive Line",
-  "Linebacker",
-  "Defensive Back",
-  "Athlete",
-  "Specialist"
+  { label: "QB", value: "Quarterback" },
+  { label: "RB", value: "Running Back" },
+  { label: "WR", value: "Wide Receiver" },
+  { label: "TE", value: "Tight End" },
+  { label: "OL", value: "Offensive Line" },
+  { label: "DL", value: "Defensive Line" },
+  { label: "LB", value: "Linebacker" },
+  { label: "DB", value: "Defensive Back" },
+  { label: "AT", value: "Athlete" },
+  { label: "SP", value: "Specialist" },
 ];
 
 

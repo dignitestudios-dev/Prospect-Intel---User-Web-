@@ -64,11 +64,9 @@ export default function ActiveFilters({
             {positionPills?.map((p, i) => (
               <PositionPill
                 key={i}
-                label={p.slice(0, 2)}
-                onClick={() => setSelectedPosition(p)}
-                active={selectedPosition === p}
-
-
+                label={p.label}
+                onClick={() => setSelectedPosition(p.value)}
+                active={selectedPosition === p.value}
               />
             ))}
           </div>
