@@ -11,9 +11,6 @@ import useDebounce, { useAppDispatch } from "../../lib/store/hook";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import axiosinstance from "../../axios";
 
-
-
-
 const positions = [
   { label: "QB", value: "Quarterback" },
   { label: "RB", value: "Running Back" },
@@ -27,8 +24,6 @@ const positions = [
   { label: "SP", value: "Specialist" },
 ];
 
-
-
 const gradYearPills = [
   { label: "2027" },
   { label: "2028" },
@@ -41,15 +36,11 @@ const gradYearPills = [
 const personalCharacters = [
   { label: "A" },
 
-
   { label: "B" },
-
 
   { label: "C" },
 
-
   { label: "D" },
-
 
   { label: "F" },
 
@@ -57,18 +48,13 @@ const personalCharacters = [
 ];
 
 const footballCharacters = [
-
   { label: "A" },
-
 
   { label: "B" },
 
-
   { label: "C" },
 
-
   { label: "D" },
-
 
   { label: "F" },
 
@@ -76,41 +62,62 @@ const footballCharacters = [
 ];
 export const locationData = {
   Colorado: ["Denver", "Boulder", "Aurora"],
-  Texas: ["Houston", "Dallas", "Austin"]
+  Texas: ["Houston", "Dallas", "Austin"],
 };
 const DummyHome = () => {
   const dispatch = useAppDispatch();
-  const queryClient = useQueryClient()
-  const [page, setPage] = useState(1)
-  const [schoolPage, setSchoolPage] = useState(1)
-  const [search, setSearch] = useState("")
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [schoolPage, setSchoolPage] = useState(1);
+  const [search, setSearch] = useState("");
   const [isArchived, setIsArchived] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState('');
-  const [personalPiScore, setPersonalPiScore] = useState('')
-  const [footballPiScore, setFootBallPiScore] = useState('')
+  const [selectedPosition, setSelectedPosition] = useState("");
+  const [personalPiScore, setPersonalPiScore] = useState("");
+  const [footballPiScore, setFootBallPiScore] = useState("");
   const [selectedSchool, setSelectedSchool] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [cities, setCities] = useState([]);
-  const [selectedGradeYear, setSelectedGradeYear] = useState('')
-  const SchoolId = selectedSchool?.id || ""
+  const [selectedGradeYear, setSelectedGradeYear] = useState("");
+  const SchoolId = selectedSchool?.id || "";
   const [status, setStatus] = useState(null);
-  const isActive = status === "active" ? true : status === "inactive" ? false : "";
-  const debouncedSearch = useDebounce(search, 500)
-  const [selectedIds, setSelectedIds] = useState([])
-  const [csvExportLoading, setCsvExportLoading] = useState(false)
+  const isActive =
+    status === "active" ? true : status === "inactive" ? false : "";
+  const debouncedSearch = useDebounce(search, 500);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [csvExportLoading, setCsvExportLoading] = useState(false);
 
-
-
-  const { data, isLoading, } = useQuery({
-    queryKey: ["athlete", page, search, selectedPosition, personalPiScore, footballPiScore, SchoolId, selectedGradeYear, status, selectedCity, selectedState],
-    queryFn: () => getAthlete({ page, search: debouncedSearch, selectedPosition, personalPiScore, footballPiScore, SchoolId, selectedGradeYear, isActive, selectedCity, selectedState }),
+  const { data, isLoading } = useQuery({
+    queryKey: [
+      "athlete",
+      page,
+      search,
+      selectedPosition,
+      personalPiScore,
+      footballPiScore,
+      SchoolId,
+      selectedGradeYear,
+      status,
+      selectedCity,
+      selectedState,
+    ],
+    queryFn: () =>
+      getAthlete({
+        page,
+        search: debouncedSearch,
+        selectedPosition,
+        personalPiScore,
+        footballPiScore,
+        SchoolId,
+        selectedGradeYear,
+        isActive,
+        selectedCity,
+        selectedState,
+      }),
     keepPreviousData: true,
     staleTime: 1000 * 60 * 5,
-
   });
-
 
   useEffect(() => {
     const filters = {
@@ -126,20 +133,19 @@ const DummyHome = () => {
     };
 
     const appliedFilters = Object.fromEntries(
-      Object.entries(filters).filter(([_, v]) => v)
+      Object.entries(filters).filter(([_, v]) => v),
     );
 
     if (Object.keys(appliedFilters).length > 0) {
       dispatch(
         logActivity({
-
           title: "Filter Applied",
           description: "User applied filters",
           metaData: {
             type: "Filters",
-            filter: appliedFilters
+            filter: appliedFilters,
           },
-        })
+        }),
       );
     }
   }, [
@@ -154,26 +160,24 @@ const DummyHome = () => {
     status,
   ]);
 
-
-  const { data: schools, isLoading: schoolLoading, } = useQuery({
+  const { data: schools, isLoading: schoolLoading } = useQuery({
     queryKey: ["school", schoolPage],
     queryFn: () => getSchool({ schoolPage }),
     keepPreviousData: true,
     staleTime: 1000 * 60 * 5,
-
   });
 
   const handleClearAll = () => {
-    setSelectedPosition('');
-    setPersonalPiScore('');
-    setFootBallPiScore('');
-    setSelectedGradeYear('')
-    setSelectedCity('')
-    setSelectedState('')
+    setSelectedPosition("");
+    setPersonalPiScore("");
+    setFootBallPiScore("");
+    setSelectedGradeYear("");
+    setSelectedCity("");
+    setSelectedState("");
     setSelectedSchool(null);
     setSchoolPage(1);
-    setSearch('');
-    setStatus(null)
+    setSearch("");
+    setStatus(null);
     setPage(1);
   };
   useEffect(() => {
@@ -185,18 +189,14 @@ const DummyHome = () => {
     setSelectedCity("");
   }, [selectedState]);
 
-
   const handleCSVExport = async () => {
-
-
-    setCsvExportLoading(true)
+    setCsvExportLoading(true);
     try {
-
       const response = await axiosinstance.post("/athlete/export/csv", {
         athletes: selectedIds,
         ...(status === "active" && { isActive: true }),
         ...(status === "inactive" && { isActive: false }),
-      })
+      });
       if (response.status === 200) {
         const blob = new Blob([response.data], { type: "text/csv" });
         const url = window.URL.createObjectURL(blob);
@@ -211,33 +211,32 @@ const DummyHome = () => {
         window.URL.revokeObjectURL(url);
 
         SuccessToast("Template downloaded");
-        setSelectedIds([])
-
+        setSelectedIds([]);
       }
     } catch (error) {
-      ErrorToast(error?.response?.data?.message)
+      ErrorToast(error?.response?.data?.message);
     } finally {
-      setCsvExportLoading(false)
+      setCsvExportLoading(false);
     }
-  }
+  };
 
   return (
     <div className="w-full min-h-screen h-full bg-[#F5F7FB] flex justify-center items-start font-sans ">
       <div className="w-full h-full bg-[#EAEEF8] border-2 border-gray-100 mb-2 overflow-auto">
-        <div className="p-6 flex justify-between items-center">
+        <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           {/* Header Content */}
-          <div className="flex items-center gap-4 ">
-            <div className="relative ">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className="relative w-full sm:w-[380px]">
               <FaSearch className="absolute shadow-xl left-4 top-1/2 -translate-y-1/2 text-black text-lg" />
               <input
                 type="text"
                 placeholder="Search for players"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-[380px] font-thin h-[50px] pl-10 pr-4 py-2.5 rounded-xl bg-white border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none placeholder-gray-400 text-sm shadow-sm"
+                className="w-full font-thin h-[50px] pl-10 pr-4 py-2.5 rounded-xl bg-white border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none placeholder-gray-400 text-sm shadow-sm"
               />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <p className="cursor-pointer text-[#0085CA] font-medium">
                 Advanced Filters
               </p>
@@ -245,17 +244,21 @@ const DummyHome = () => {
           </div>
 
           {/* Right Side Header Buttons and Account */}
-          <div className="flex items-center space-x-20 border-gray-200 pl-2 ">
-
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-20 w-full sm:w-auto">
             {!isArchived && (
               <div className="flex items-center space-x-3">
                 {/* <button className="flex items-center px-4 py-2 border border-white bg-[#EAEEF8] rounded-lg text-gray-700 text-sm shadow-sm hover:bg-gray-50 transition-colors">
                   <FaPrint className="mr-2 text-xs" />
                   Print
                 </button> */}
-                <button onClick={handleCSVExport} className="flex items-center px-4 py-2 border border-white bg-[#EAEEF8] text-gray-700 rounded-lg text-sm shadow shadow-blue-200 hover:bg-gray-50 transition-colors">
+                <button
+                  onClick={handleCSVExport}
+                  className="flex items-center px-4 py-2 border border-white bg-[#EAEEF8] text-gray-700 rounded-lg text-sm shadow shadow-blue-200 hover:bg-gray-50 transition-colors"
+                >
                   <FaDownload className="mr-2 text-xs" />
-                  <span>{csvExportLoading ? "Exporting..." : "Export CSV"}</span>
+                  <span>
+                    {csvExportLoading ? "Exporting..." : "Export CSV"}
+                  </span>
                 </button>
               </div>
             )}
@@ -263,19 +266,19 @@ const DummyHome = () => {
             {/* RIGHT SIDE: Active / Archived Toggle */}
             <div className="flex items-center">
               <div className="flex border border-white bg-[#EAEEF8] rounded-lg overflow-hidden shadow-sm p-1">
-
                 {/* Active */}
                 <button
-                  className={`px-10 py-2 rounded-lg text-sm font-medium ${status === "active"
-                    ? "bg-white border-2 border-gray-300 text-black"
-                    : "text-gray-600 hover:bg-gray-50"
-                    }`}
+                  className={`px-6 sm:px-10 py-2 rounded-lg text-sm font-medium ${
+                    status === "active"
+                      ? "bg-white border-2 border-gray-300 text-black"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
                   onClick={() => {
-                    setStatus("active")
+                    setStatus("active");
 
                     queryClient.invalidateQueries({
-                      queryKey: ["athlete"]
-                    })
+                      queryKey: ["athlete"],
+                    });
                   }}
                 >
                   Active
@@ -283,41 +286,43 @@ const DummyHome = () => {
 
                 {/* Archived */}
                 <button
-                  className={`px-6 py-2 rounded-lg text-sm font-medium ${status === "inactive"
-                    ? "bg-white border-2 border-gray-300 text-black"
-                    : "text-gray-600 hover:bg-gray-50"
-                    }`}
+                  className={`px-4 sm:px-6 py-2 rounded-lg text-sm font-medium ${
+                    status === "inactive"
+                      ? "bg-white border-2 border-gray-300 text-black"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
                   onClick={() => {
-                    setStatus("inactive")
+                    setStatus("inactive");
 
                     queryClient.invalidateQueries({
-                      queryKey: ["athlete"]
-                    })
+                      queryKey: ["athlete"],
+                    });
                   }}
-
                 >
                   Archived
                 </button>
-
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Content Area: Table and Filters */}
-        <div className="flex">
+        <div className="flex flex-col xl:flex-row">
           {/* Left Side: Table & Results */}
-          <div className="flex-grow p-6 pt-4 border-2 border-r border-gray-100 max-w-[calc(100%-300px)]">
+          <div className="flex-grow p-6 pt-4 border-2 border-r-0 xl:border-r border-gray-100 w-full xl:max-w-[calc(100%-300px)]">
             <h3 className="text-lg font-bold text-gray-800 mb-4">
               {data?.data?.length} Results
             </h3>
 
-
-            <ArchivedTable selectedIds={selectedIds} setSelectedIds={setSelectedIds} players={data?.data} pagination={data?.pagination} loading={isLoading} setPage={setPage} />
-
+            <ArchivedTable
+              selectedIds={selectedIds}
+              setSelectedIds={setSelectedIds}
+              players={data?.data}
+              pagination={data?.pagination}
+              loading={isLoading}
+              setPage={setPage}
+            />
           </div>
-
-
 
           <ActiveFilters
             positionPills={positions}
@@ -349,8 +354,6 @@ const DummyHome = () => {
             personalPiScore={personalPiScore}
             footballPiScore={footballPiScore}
           />
-
-
 
           {/* </div> */}
         </div>
