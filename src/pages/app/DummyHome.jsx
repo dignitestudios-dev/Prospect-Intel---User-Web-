@@ -20,7 +20,7 @@ const positions = [
   { label: "DL", value: "Defensive Line" },
   { label: "LB", value: "Linebacker" },
   { label: "DB", value: "Defensive Back" },
-  { label: "AT", value: "Athlete" },
+  { label: "ATH", value: "Athlete" },
   { label: "SP", value: "Specialist" },
 ];
 

@@ -116,7 +116,7 @@ const ArchivedTable = ({
                   alt={p.basicInfo?.name}
                   className="w-8 h-8 rounded-full border border-gray-200"
                 />
-                <span className="font-medium text-gray-800 text-[13px] truncate max-w-[150px] block">
+                <span className="font-medium text-gray-800 text-[13px] break-words block">
                   {p.basicInfo?.name}
                 </span>
               </div>
@@ -156,7 +156,7 @@ const ArchivedTable = ({
                   alt="College Logo"
                   className="w-[30px] h-[30px] object-contain"
                 />
-                <span className="text-[14px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">
+                <span className="text-[14px] text-gray-600 break-words">
                   {p.basicInfo?.committedCollege?.name || "N/A"}
                 </span>
               </div>

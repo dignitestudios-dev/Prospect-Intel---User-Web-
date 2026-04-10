@@ -27,7 +27,7 @@ export const formatAthleteForCSV = (athlete) => {
     // Basic
     ID: athlete._id,
     Name: athlete.basicInfo?.name,
-    Email: athlete.basicInfo?.email,
+    // Email: athlete.basicInfo?.email,
     Phone: athlete.basicInfo?.phone,
     Hometown: athlete.basicInfo?.hometown,
     DOB: new Date(athlete.basicInfo?.dob).toLocaleDateString(),
@@ -46,6 +46,11 @@ export const formatAthleteForCSV = (athlete) => {
     "Mother Occupation": athlete.family?.motherOccupation,
     "Mother Contact": athlete.family?.motherContact,
     "Father Name": athlete.family?.fatherName,
+    "Father DOB": athlete.family?.fatherDob
+      ? new Date(athlete.family.fatherDob).toLocaleDateString()
+      : "",
+    "Father Occupation": athlete.family?.fatherOccupation,
+    "Father Contact": athlete.family?.fatherContact,
     "Key Influences": athlete.family?.keyInfluences,
 
     Siblings: athlete.family?.siblings
@@ -67,32 +72,32 @@ export const formatAthleteForCSV = (athlete) => {
     Weaknesses: athlete.overview?.weaknesses?.join(" | "),
 
     // Stats
-    Touches: athlete.stats?.touches,
-    "Successful Passes": athlete.stats?.successfulPasses,
-    "Pass Accuracy": athlete.stats?.passAccuracy,
-    "Tackles Completed": athlete.stats?.tacklesCompleted,
-    Carries: athlete.stats?.carries,
-    Tries: athlete.stats?.tries,
+    // Touches: athlete.stats?.touches,
+    // "Successful Passes": athlete.stats?.successfulPasses,
+    // "Pass Accuracy": athlete.stats?.passAccuracy,
+    // "Tackles Completed": athlete.stats?.tacklesCompleted,
+    // Carries: athlete.stats?.carries,
+    // Tries: athlete.stats?.tries,
 
     // Education
-    Education: athlete.education
-      ?.map(
-        (e) =>
-          `${e.name} (${e.field}) ${new Date(e.startYear).getFullYear()}-${new Date(e.endYear).getFullYear()}`,
-      )
-      .join(" | "),
+    // Education: athlete.education
+    //   ?.map(
+    //     (e) =>
+    //       `${e.name} (${e.field}) ${new Date(e.startYear).getFullYear()}-${new Date(e.endYear).getFullYear()}`,
+    //   )
+    //   .join(" | "),
 
     // Achievements
-    Achievements: athlete.achievements
-      ?.map((a) => `${a.title} - ${a.description}`)
-      .join(" | "),
+    // Achievements: athlete.achievements
+    //   ?.map((a) => `${a.title} - ${a.description}`)
+    //   .join(" | "),
 
     // Media
-    "Media URLs": athlete.media?.join(" | "),
+    // "Media URLs": athlete.media?.join(" | "),
 
     // Interest Stats
-    "Interest Total": athlete.intrestStats?.total,
-    "Interest Pending": athlete.intrestStats?.pending,
-    "Interest Updated": athlete.intrestStats?.updated,
+    // "Interest Total": athlete.intrestStats?.total,
+    // "Interest Pending": athlete.intrestStats?.pending,
+    // "Interest Updated": athlete.intrestStats?.updated,
   };
 };

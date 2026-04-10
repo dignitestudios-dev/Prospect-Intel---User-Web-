@@ -449,7 +449,7 @@ const Profile = () => {
                 {/* Commitment */}
                 <div className="flex flex-col items-center">
                   <span className="text-gray-500 text-[14px] md:text-[28px] font-semibold">
-                    Commitment
+                    Committed
                   </span>
                   <div className="flex gap-2 items-center">
                     <img
