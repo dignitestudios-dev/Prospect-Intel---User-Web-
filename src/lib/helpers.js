@@ -101,3 +101,49 @@ export const formatAthleteForCSV = (athlete) => {
     // "Interest Updated": athlete.intrestStats?.updated,
   };
 };
+
+export const formatAthleteForPDF = (athlete) => {
+  return {
+    basicInfo: {
+      id: athlete._id,
+      name: athlete.basicInfo?.name || "N/A",
+      position: athlete.basicInfo?.position || "N/A",
+      gradYear: athlete.basicInfo?.gradYear || "N/A",
+      height: athlete.basicInfo?.height || "N/A",
+      weight: athlete.basicInfo?.weight || "N/A",
+      status: athlete.basicInfo?.status || "N/A",
+      email: athlete.basicInfo?.email || "N/A",
+      phone: athlete.basicInfo?.phone || "N/A",
+      hometown: athlete.basicInfo?.hometown || "N/A",
+      dob: formatDate(athlete.basicInfo?.dob) || "N/A",
+      schoolName: athlete.basicInfo?.schoolName || "N/A",
+      state: athlete.basicInfo?.state || "N/A",
+      committedCollege: athlete.basicInfo?.committedCollege?.name || "N/A",
+    },
+    family: {
+      motherName: athlete.family?.motherName || "N/A",
+      motherOccupation: athlete.family?.motherOccupation || "N/A",
+      motherDob: formatDate(athlete.family?.motherDob) || "N/A",
+      motherContact: athlete.family?.motherContact || "N/A",
+      fatherName: athlete.family?.fatherName || "N/A",
+      fatherOccupation: athlete.family?.fatherOccupation || "N/A",
+      fatherDob: formatDate(athlete.family?.fatherDob) || "N/A",
+      fatherContact: athlete.family?.fatherContact || "N/A",
+      keyInfluences: athlete.family?.keyInfluences || "N/A",
+    },
+    athletic: {
+      otherSports: athlete.athlete?.otherSports || "N/A",
+      activities: athlete.athlete?.activities || "N/A",
+      coachEvaluation: athlete.athlete?.coachEvaluation || "N/A",
+      footballPiScore: athlete.athlete?.footballPiScore || "N/A",
+      footballDescription: athlete.athlete?.footballDescription || "N/A",
+      personalPiScore: athlete.athlete?.personalPiScore || "N/A",
+      personalDescription: athlete.athlete?.personalDescription || "N/A",
+      otherInfo: athlete.athlete?.otherInfo || "N/A",
+    },
+    overview: {
+      strengths: athlete.overview?.strengths?.join(", ") || "N/A",
+      weaknesses: athlete.overview?.weaknesses?.join(", ") || "N/A",
+    },
+  };
+};
