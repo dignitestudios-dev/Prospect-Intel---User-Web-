@@ -65,7 +65,11 @@ export default function ActiveFilters({
               <PositionPill
                 key={i}
                 label={p.label}
-                onClick={() => setSelectedPosition(p.value)}
+                onClick={() =>
+                  setSelectedPosition(
+                    selectedPosition === p.value ? "" : p.value,
+                  )
+                }
                 active={selectedPosition === p.value}
               />
             ))}
@@ -79,7 +83,9 @@ export default function ActiveFilters({
               <GradingScalePill
                 key={i}
                 label={y.label}
-                onClick={() => setPersonalPiScore(y.label)}
+                onClick={() =>
+                  setPersonalPiScore(personalPiScore === y.label ? "" : y.label)
+                }
                 active={personalPiScore === y.label}
               />
             ))}
@@ -93,7 +99,9 @@ export default function ActiveFilters({
               <GradingScalePill
                 key={i}
                 label={y.label}
-                onClick={() => setFootBallPiScore(y.label)}
+                onClick={() =>
+                  setFootBallPiScore(footballPiScore === y.label ? "" : y.label)
+                }
                 active={footballPiScore === y.label}
               />
             ))}
@@ -108,7 +116,11 @@ export default function ActiveFilters({
                 key={i}
                 label={y.label}
                 active={selectedGradeYear === y.label}
-                onClick={() => setSelectedGradeYear(y.label)}
+                onClick={() =>
+                  setSelectedGradeYear(
+                    selectedGradeYear === y.label ? "" : y.label,
+                  )
+                }
               />
             ))}
           </div>

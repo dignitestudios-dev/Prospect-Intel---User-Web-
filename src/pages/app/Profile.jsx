@@ -23,7 +23,11 @@ import { useParams } from "react-router";
 import { mockAtheleTableData } from "../../static/mockData";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAtheleteById } from "../../lib/query/queryFn";
-import { formatAthleteForCSV, formatDate } from "../../lib/helpers";
+import {
+  formatAthleteForCSV,
+  formatDate,
+  generateAthletePDF,
+} from "../../lib/helpers";
 import axiosinstance from "../../axios";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import { ProfileSkeleton } from "../../components/global/Skeleton";
@@ -365,201 +369,203 @@ const Profile = () => {
   //   window.URL.revokeObjectURL(url);
   // };
 
-  const handleDownloadPDF = () => {
-    if (!athleteDetail) return;
+  // const handleDownloadPDF = () => {
+  //   if (!athleteDetail) return;
 
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 15;
-    let yPosition = margin;
-    const lineHeight = 7;
+  //   const doc = new jsPDF();
+  //   const pageWidth = doc.internal.pageSize.getWidth();
+  //   const pageHeight = doc.internal.pageSize.getHeight();
+  //   const margin = 15;
+  //   let yPosition = margin;
+  //   const lineHeight = 7;
 
-    // Helper function to add text with wrapping
-    const addWrappedText = (text, x, y, maxWidth, fontSize = 10) => {
-      doc.setFontSize(fontSize);
-      const lines = doc.splitTextToSize(String(text || "N/A"), maxWidth);
-      doc.text(lines, x, y);
-      return y + lines.length * lineHeight;
-    };
+  //   // Helper function to add text with wrapping
+  //   const addWrappedText = (text, x, y, maxWidth, fontSize = 10) => {
+  //     doc.setFontSize(fontSize);
+  //     const lines = doc.splitTextToSize(String(text || "N/A"), maxWidth);
+  //     doc.text(lines, x, y);
+  //     return y + lines.length * lineHeight;
+  //   };
 
-    // Helper function to add section
-    const addSection = (title, content = []) => {
-      doc.setFontSize(12);
-      doc.setFont(undefined, "bold");
-      yPosition += 5;
-      doc.text(title, margin, yPosition);
-      yPosition += 8;
-      doc.setFont(undefined, "normal");
-      doc.setFontSize(10);
+  //   // Helper function to add section
+  //   const addSection = (title, content = []) => {
+  //     doc.setFontSize(12);
+  //     doc.setFont(undefined, "bold");
+  //     yPosition += 5;
+  //     doc.text(title, margin, yPosition);
+  //     yPosition += 8;
+  //     doc.setFont(undefined, "normal");
+  //     doc.setFontSize(10);
 
-      content.forEach((item) => {
-        if (yPosition > pageHeight - margin) {
-          doc.addPage();
-          yPosition = margin;
-        }
-        yPosition = addWrappedText(
-          `${item.label}: ${item.value}`,
-          margin,
-          yPosition,
-          pageWidth - 2 * margin,
-          10,
-        );
-        yPosition += 2;
-      });
-    };
+  //     content.forEach((item) => {
+  //       if (yPosition > pageHeight - margin) {
+  //         doc.addPage();
+  //         yPosition = margin;
+  //       }
+  //       yPosition = addWrappedText(
+  //         `${item.label}: ${item.value}`,
+  //         margin,
+  //         yPosition,
+  //         pageWidth - 2 * margin,
+  //         10,
+  //       );
+  //       yPosition += 2;
+  //     });
+  //   };
 
-    // ===== HEADER =====
-    doc.setFontSize(16);
-    doc.setFont(undefined, "bold");
-    doc.text(
-      `${athleteDetail?.basicInfo?.name || "Athlete Profile"}`,
-      margin,
-      yPosition,
-    );
-    yPosition += 10;
+  //   // ===== HEADER =====
+  //   doc.setFontSize(16);
+  //   doc.setFont(undefined, "bold");
+  //   doc.text(
+  //     `${athleteDetail?.basicInfo?.name || "Athlete Profile"}`,
+  //     margin,
+  //     yPosition,
+  //   );
+  //   yPosition += 10;
 
-    // Profile Summary
-    doc.setFontSize(10);
-    doc.setFont(undefined, "normal");
-    const profileSummary = [
-      { label: "ID", value: athleteDetail?._id },
-      { label: "Position", value: athleteDetail?.basicInfo?.position },
-      { label: "Graduation Year", value: athleteDetail?.basicInfo?.gradYear },
-      { label: "Height", value: athleteDetail?.basicInfo?.height },
-      { label: "Weight", value: athleteDetail?.basicInfo?.weight },
-      { label: "Status", value: athleteDetail?.basicInfo?.status },
-    ];
-    addSection("Basic Information", profileSummary);
+  //   // Profile Summary
+  //   doc.setFontSize(10);
+  //   doc.setFont(undefined, "normal");
+  //   const profileSummary = [
+  //     { label: "ID", value: athleteDetail?._id },
+  //     { label: "Position", value: athleteDetail?.basicInfo?.position },
+  //     { label: "Graduation Year", value: athleteDetail?.basicInfo?.gradYear },
+  //     { label: "Height", value: athleteDetail?.basicInfo?.height },
+  //     { label: "Weight", value: athleteDetail?.basicInfo?.weight },
+  //     { label: "Status", value: athleteDetail?.basicInfo?.status },
+  //   ];
+  //   addSection("Basic Information", profileSummary);
 
-    // ===== CONTACT INFO =====
-    const contactInfo = [
-      { label: "Email", value: athleteDetail?.basicInfo?.email || "N/A" },
-      { label: "Phone", value: athleteDetail?.basicInfo?.phone || "N/A" },
-      {
-        label: "Hometown",
-        value: athleteDetail?.basicInfo?.hometown || "N/A",
-      },
-      {
-        label: "Date of Birth",
-        value: formatDate(athleteDetail?.basicInfo?.dob) || "N/A",
-      },
-      {
-        label: "High School",
-        value: athleteDetail?.basicInfo?.schoolName || "N/A",
-      },
-      { label: "State", value: athleteDetail?.basicInfo?.state || "N/A" },
-      {
-        label: "Committed College",
-        value: athleteDetail?.basicInfo?.committedCollege?.name || "N/A",
-      },
-    ];
-    addSection("Contact & School Information", contactInfo);
+  //   // ===== CONTACT INFO =====
+  //   const contactInfo = [
+  //     { label: "Email", value: athleteDetail?.basicInfo?.email || "N/A" },
+  //     { label: "Phone", value: athleteDetail?.basicInfo?.phone || "N/A" },
+  //     {
+  //       label: "Hometown",
+  //       value: athleteDetail?.basicInfo?.hometown || "N/A",
+  //     },
+  //     {
+  //       label: "Date of Birth",
+  //       value: formatDate(athleteDetail?.basicInfo?.dob) || "N/A",
+  //     },
+  //     {
+  //       label: "High School",
+  //       value: athleteDetail?.basicInfo?.schoolName || "N/A",
+  //     },
+  //     { label: "State", value: athleteDetail?.basicInfo?.state || "N/A" },
+  //     {
+  //       label: "Committed College",
+  //       value: athleteDetail?.basicInfo?.committedCollege?.name || "N/A",
+  //     },
+  //   ];
+  //   addSection("Contact & School Information", contactInfo);
 
-    // ===== FAMILY INFORMATION =====
-    const familyInfo = [
-      { label: "Mother Name", value: athleteDetail?.family?.motherName },
-      {
-        label: "Mother Occupation",
-        value: athleteDetail?.family?.motherOccupation,
-      },
-      {
-        label: "Mother DOB",
-        value: formatDate(athleteDetail?.family?.motherDob) || "N/A",
-      },
-      { label: "Mother Contact", value: athleteDetail?.family?.motherContact },
-      { label: "Father Name", value: athleteDetail?.family?.fatherName },
-      {
-        label: "Father Occupation",
-        value: athleteDetail?.family?.fatherOccupation,
-      },
-      {
-        label: "Father DOB",
-        value: formatDate(athleteDetail?.family?.fatherDob) || "N/A",
-      },
-      { label: "Father Contact", value: athleteDetail?.family?.fatherContact },
-      {
-        label: "Key Influences",
-        value: athleteDetail?.family?.keyInfluences || "N/A",
-      },
-    ];
-    addSection("Family Information", familyInfo);
+  //   // ===== FAMILY INFORMATION =====
+  //   const familyInfo = [
+  //     { label: "Mother Name", value: athleteDetail?.family?.motherName },
+  //     {
+  //       label: "Mother Occupation",
+  //       value: athleteDetail?.family?.motherOccupation,
+  //     },
+  //     {
+  //       label: "Mother DOB",
+  //       value: formatDate(athleteDetail?.family?.motherDob) || "N/A",
+  //     },
+  //     { label: "Mother Contact", value: athleteDetail?.family?.motherContact },
+  //     { label: "Father Name", value: athleteDetail?.family?.fatherName },
+  //     {
+  //       label: "Father Occupation",
+  //       value: athleteDetail?.family?.fatherOccupation,
+  //     },
+  //     {
+  //       label: "Father DOB",
+  //       value: formatDate(athleteDetail?.family?.fatherDob) || "N/A",
+  //     },
+  //     { label: "Father Contact", value: athleteDetail?.family?.fatherContact },
+  //     {
+  //       label: "Key Influences",
+  //       value: athleteDetail?.family?.keyInfluences || "N/A",
+  //     },
+  //   ];
+  //   addSection("Family Information", familyInfo);
 
-    // ===== ATHLETIC INFORMATION =====
-    const athleticInfo = [
-      {
-        label: "Other Sports",
-        value: athleteDetail?.athlete?.otherSports || "N/A",
-      },
-      {
-        label: "Activities",
-        value: athleteDetail?.athlete?.activities || "N/A",
-      },
-      {
-        label: "Coach Evaluation",
-        value: athleteDetail?.athlete?.coachEvaluation || "N/A",
-      },
-    ];
-    addSection("Athletic Background", athleticInfo);
+  //   // ===== ATHLETIC INFORMATION =====
+  //   const athleticInfo = [
+  //     {
+  //       label: "Other Sports",
+  //       value: athleteDetail?.athlete?.otherSports || "N/A",
+  //     },
+  //     {
+  //       label: "Activities",
+  //       value: athleteDetail?.athlete?.activities || "N/A",
+  //     },
+  //     {
+  //       label: "Coach Evaluation",
+  //       value: athleteDetail?.athlete?.coachEvaluation || "N/A",
+  //     },
+  //   ];
+  //   addSection("Athletic Background", athleticInfo);
 
-    // ===== CHARACTER SCORES =====
-    const characterInfo = [
-      {
-        label: "Football PI Score",
-        value: athleteDetail?.athlete?.footballPiScore || "N/A",
-      },
-      {
-        label: "Football Description",
-        value: athleteDetail?.athlete?.footballDescription || "N/A",
-      },
-      {
-        label: "Personal PI Score",
-        value: athleteDetail?.athlete?.personalPiScore || "N/A",
-      },
-      {
-        label: "Personal Description",
-        value: athleteDetail?.athlete?.personalDescription || "N/A",
-      },
-    ];
-    addSection("Character Assessment", characterInfo);
+  //   // ===== CHARACTER SCORES =====
+  //   const characterInfo = [
+  //     {
+  //       label: "Football PI Score",
+  //       value: athleteDetail?.athlete?.footballPiScore || "N/A",
+  //     },
+  //     {
+  //       label: "Football Description",
+  //       value: athleteDetail?.athlete?.footballDescription || "N/A",
+  //     },
+  //     {
+  //       label: "Personal PI Score",
+  //       value: athleteDetail?.athlete?.personalPiScore || "N/A",
+  //     },
+  //     {
+  //       label: "Personal Description",
+  //       value: athleteDetail?.athlete?.personalDescription || "N/A",
+  //     },
+  //   ];
+  //   addSection("Character Assessment", characterInfo);
 
-    // ===== STRENGTHS & WEAKNESSES =====
-    const overviewInfo = [
-      {
-        label: "Strengths",
-        value: athleteDetail?.overview?.strengths?.join(", ") || "N/A",
-      },
-      {
-        label: "Weaknesses",
-        value: athleteDetail?.overview?.weaknesses?.join(", ") || "N/A",
-      },
-    ];
-    addSection("Overview", overviewInfo);
+  //   // ===== STRENGTHS & WEAKNESSES =====
+  //   const overviewInfo = [
+  //     {
+  //       label: "Strengths",
+  //       value: athleteDetail?.overview?.strengths?.join(", ") || "N/A",
+  //     },
+  //     {
+  //       label: "Weaknesses",
+  //       value: athleteDetail?.overview?.weaknesses?.join(", ") || "N/A",
+  //     },
+  //   ];
+  //   addSection("Overview", overviewInfo);
 
-    // ===== ADDITIONAL INFO =====
-    const additionalInfo = [
-      {
-        label: "Other Information",
-        value: athleteDetail?.athlete?.otherInfo || "N/A",
-      },
-    ];
-    addSection("Additional Information", additionalInfo);
+  //   // ===== ADDITIONAL INFO =====
+  //   const additionalInfo = [
+  //     {
+  //       label: "Other Information",
+  //       value: athleteDetail?.athlete?.otherInfo || "N/A",
+  //     },
+  //   ];
+  //   addSection("Additional Information", additionalInfo);
 
-    // ===== FOOTER =====
-    if (yPosition > pageHeight - margin) {
-      doc.addPage();
-    }
-    doc.setFontSize(9);
-    doc.setFont(undefined, "italic");
-    doc.text(
-      `Generated on ${new Date().toLocaleDateString()}`,
-      margin,
-      pageHeight - 10,
-    );
+  //   // ===== FOOTER =====
+  //   if (yPosition > pageHeight - margin) {
+  //     doc.addPage();
+  //   }
+  //   doc.setFontSize(9);
+  //   doc.setFont(undefined, "italic");
+  //   doc.text(
+  //     `Generated on ${new Date().toLocaleDateString()}`,
+  //     margin,
+  //     pageHeight - 10,
+  //   );
 
-    // Download PDF
-    doc.save(`${athleteDetail?.basicInfo?.name || "Athlete_Profile"}.pdf`);
-  };
+  //   // Download PDF
+  //   doc.save(`${athleteDetail?.basicInfo?.name || "Athlete_Profile"}.pdf`);
+  // };
+
+  const handleDownloadPDF = () => generateAthletePDF(athleteDetail, formatDate);
 
   const normalizeGrade = (grade) => {
     if (!grade) return null;

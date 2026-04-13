@@ -180,6 +180,7 @@ const DummyHome = () => {
     setStatus(null);
     setPage(1);
   };
+
   useEffect(() => {
     if (selectedState) {
       setCities(citiesData[selectedState] || []);
