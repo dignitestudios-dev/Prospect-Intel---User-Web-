@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { prospectLogo } from "../assets/export";
+import axiosinstance from "../axios";
 
 // All the helper functions should must be there.
 // The functions that you're using multiple times must be there.
@@ -325,27 +326,35 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   const athleteImage = athleteDetail?.basicInfo?.image;
 
   if (athleteImage) {
-    console.log("🚀 ~ generateAthletePDF ~ athleteImage:", athleteImage);
     try {
-      const getBase64FromUrl = async (url) => {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const mimeType = blob.type || "image/jpeg";
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () =>
-            resolve({ base64: reader.result, mime: mimeType });
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      };
+      const response = await axiosinstance.post("/user/buffer/s3", {
+        s3Url: athleteImage,
+      });
 
-      const { base64, mime } = await getBase64FromUrl(athleteImage);
-      const format = mime.includes("png") ? "PNG" : "JPEG";
+      // ✅ Correctly access the nested buffer array: response.data.data.data
+      const bufferArray = response?.data?.data?.data;
+
+      if (!bufferArray || !bufferArray.length)
+        throw new Error("Invalid buffer");
+
+      // Convert to base64 (chunked to avoid call stack overflow)
+      const uint8Array = new Uint8Array(bufferArray);
+      let binary = "";
+      const chunkSize = 0x8000;
+
+      for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        const chunk = uint8Array.subarray(i, i + chunkSize);
+        binary += String.fromCharCode(...chunk);
+      }
+
+      const base64 = `data:image/jpeg;base64,${btoa(binary)}`;
+
       strokeRect(M, TOP_Y, PHOTO_W, PHOTO_H, MGRAY, 1);
-      doc.addImage(base64, format, M, TOP_Y, PHOTO_W, PHOTO_H);
-    } catch {
-      // Fallback to placeholder if image fails to load
+      doc.addImage(base64, "JPEG", M, TOP_Y, PHOTO_W, PHOTO_H);
+    } catch (error) {
+      console.error("Image load failed:", error);
+
+      // Fallback placeholder
       strokeRect(M, TOP_Y, PHOTO_W, PHOTO_H, MGRAY, 1);
       fillRect(M, TOP_Y, PHOTO_W, PHOTO_H, [230, 230, 230]);
       doc.setFont("helvetica", "italic");
@@ -355,9 +364,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
         "Athlete Photo Not Provided",
         M + PHOTO_W / 2,
         TOP_Y + PHOTO_H / 2,
-        {
-          align: "center",
-        },
+        { align: "center" },
       );
     }
   } else {
