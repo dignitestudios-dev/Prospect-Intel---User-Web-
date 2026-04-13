@@ -638,7 +638,7 @@ const Profile = () => {
                 />
                 <ProfileStat
                   label="Height"
-                  value={`${athleteDetail?.basicInfo?.height} Feet`}
+                  value={`${athleteDetail?.basicInfo?.height}`}
                 />
                 <ProfileStat
                   label="Weight"
@@ -782,7 +782,7 @@ const Profile = () => {
                       label="Contact"
                       value={`${parent.contact ? `+1 ${parent.contact}` : "N/A"}`}
                     />
-                    <InfoRow label="DOB" value={parent.dob} />
+                    <InfoRow label="DOB" value={formatDate(parent.dob)} />
                   </div>
                 ))}
               </div>
