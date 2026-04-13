@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FaHeart,
   FaUser,
@@ -26,7 +26,6 @@ import { getAtheleteById } from "../../lib/query/queryFn";
 import {
   formatAthleteForCSV,
   formatDate,
-  generateAthletePDF,
 } from "../../lib/helpers";
 import axiosinstance from "../../axios";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
@@ -34,6 +33,7 @@ import { ProfileSkeleton } from "../../components/global/Skeleton";
 import { useAppDispatch } from "../../lib/store/hook";
 import { logActivity } from "../../lib/store/actions/activityActions";
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 // --- END DUMMY DATA ---
 
@@ -124,6 +124,8 @@ const Profile = () => {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   const [saveLoading, setSaveLoading] = useState(false);
+  const profileRef = useRef(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const {
     data: athleteDetail,
@@ -565,7 +567,97 @@ const Profile = () => {
   //   doc.save(`${athleteDetail?.basicInfo?.name || "Athlete_Profile"}.pdf`);
   // };
 
-  const handleDownloadPDF = () => generateAthletePDF(athleteDetail, formatDate);
+  const handleDownloadPDF = async () => {
+    if (!profileRef.current) return;
+    setIsGeneratingPDF(true);
+
+    try {
+      const element = profileRef.current;
+
+      // Pre-fetch remote images as base64 to avoid CORS tainting
+      const imageMap = new Map();
+      const imgElements = element.querySelectorAll("img");
+
+      await Promise.allSettled(
+        Array.from(imgElements).map(async (img) => {
+          const src = img.src;
+          if (!src || src.startsWith("data:") || imageMap.has(src)) return;
+          try {
+            const res = await fetch(src, { mode: "cors" });
+            const blob = await res.blob();
+            const base64 = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+            imageMap.set(src, base64);
+          } catch {
+            // Fallback: use the app's S3 buffer proxy for S3 images
+            try {
+              const res = await axiosinstance.post("/user/buffer/s3", {
+                s3Url: src,
+              });
+              const buf = res?.data?.data?.data;
+              if (buf?.length) {
+                const u8 = new Uint8Array(buf);
+                let bin = "";
+                for (let i = 0; i < u8.length; i += 0x8000) {
+                  bin += String.fromCharCode(
+                    ...u8.subarray(i, i + 0x8000),
+                  );
+                }
+                imageMap.set(src, `data:image/jpeg;base64,${btoa(bin)}`);
+              }
+            } catch {
+              console.warn("Could not load image for PDF:", src);
+            }
+          }
+        }),
+      );
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#EAEEF8",
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Hide action buttons from the captured content
+          clonedDoc
+            .querySelectorAll("[data-pdf-hide]")
+            .forEach((el) => (el.style.display = "none"));
+
+          // Swap images with pre-fetched base64 to prevent CORS issues
+          clonedDoc.querySelectorAll("img").forEach((img) => {
+            const b64 = imageMap.get(img.src);
+            if (b64) img.src = b64;
+          });
+        },
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "pt", "a4");
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
+      const ratio = pdfW / canvas.width;
+      const scaledH = canvas.height * ratio;
+      const totalPages = Math.ceil(scaledH / pdfH);
+
+      for (let i = 0; i < totalPages; i++) {
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, -(i * pdfH), pdfW, scaledH);
+      }
+
+      pdf.save(
+        `${athleteDetail?.basicInfo?.name || "Athlete_Profile"}.pdf`,
+      );
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      ErrorToast("Failed to generate PDF. Please try again.");
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   const normalizeGrade = (grade) => {
     if (!grade) return null;
@@ -587,7 +679,7 @@ const Profile = () => {
     return <ProfileSkeleton />;
   }
   return (
-    <div className="w-full min-h-screen bg-[#EAEEF8] font-sans p-4">
+    <div ref={profileRef} className="w-full min-h-screen bg-[#EAEEF8] font-sans p-4">
       {showSaveSuccess && (
         <SaveSuccessPopup onClose={() => setShowSaveSuccess(false)} />
       )}
@@ -672,7 +764,7 @@ const Profile = () => {
             </div>
 
             {/* Buttons */}
-            <div className="flex flex-col items-start md:items-end space-y-3 md:ml-6 w-full md:w-auto">
+            <div data-pdf-hide className="flex flex-col items-start md:items-end space-y-3 md:ml-6 w-full md:w-auto">
               <div className="flex flex-row space-x-2 sm:space-x-3 w-full md:flex-row">
                 <button
                   className="px-4 md:px-6 py-3 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50 flex-1 sm:flex-none sm:w-auto"
@@ -695,9 +787,10 @@ const Profile = () => {
 
               <button
                 onClick={handleDownloadPDF}
-                className="flex items-center px-4 md:px-6 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 w-full md:w-[270px] h-[50px] justify-center"
+                disabled={isGeneratingPDF}
+                className="flex items-center px-4 md:px-6 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 w-full md:w-[270px] h-[50px] justify-center disabled:opacity-50"
               >
-                Download PDF
+                {isGeneratingPDF ? "Generating PDF..." : "Download PDF"}
               </button>
             </div>
           </div>
