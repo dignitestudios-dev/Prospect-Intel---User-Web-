@@ -167,6 +167,7 @@ export const formatAthleteForPDF = (athlete) => {
 // ============================================================
 
 export const generateAthletePDF = async (athleteDetail, formatDate) => {
+  console.log("🚀 ~ generateAthletePDF ~ athleteDetail:", athleteDetail);
   if (!athleteDetail) return;
 
   const doc = new jsPDF({ unit: "pt", format: "letter" });
@@ -403,6 +404,20 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   const RIGHT_X = PW / 2 + 4;
   const RIGHT_W = PW - RIGHT_X - M;
 
+  const siblings = athleteDetail?.family?.siblings;
+
+  const formattedSiblings =
+    siblings && siblings.length > 0
+      ? siblings
+          .map((s) => {
+            const name = s.name || "Unknown";
+            const type = s.type || "";
+            const dob = s.dob ? ` (DOB: ${formatDate(s.dob)})` : "";
+            return `${type}: ${name}${dob}`;
+          })
+          .join(", ")
+      : "N/A";
+
   const athleteProfileRows = [
     { label: "Name", value: athleteDetail?.basicInfo?.name },
     { label: "HS", value: athleteDetail?.basicInfo?.schoolName },
@@ -450,7 +465,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       label: "Dad's contact info",
       value: athleteDetail?.family?.fatherContact,
     },
-    { label: "Siblings", value: athleteDetail?.family?.siblings },
+    { label: "Siblings", value: formattedSiblings },
     { label: "Key Influences", value: athleteDetail?.family?.keyInfluences },
     {
       label: "Other info",
@@ -502,7 +517,11 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   // ── Grade helpers ───────────────────────────────────────────
   const normalizeGrade = (score) => {
     if (!score) return null;
-    return String(score).trim().toUpperCase();
+
+    const grade = String(score).trim().toUpperCase();
+
+    // ✅ Extract only first letter (A, B, C, D, F)
+    return grade.charAt(0);
   };
 
   const gradeDescriptions = {
@@ -670,12 +689,14 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     });
 
     // Description
+
     const desc =
       gradeDescriptions[grade] ||
       (title === "Football Character"
         ? athleteDetail?.athlete?.footballDescription
         : athleteDetail?.athlete?.personalDescription) ||
       "";
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...textClr);
