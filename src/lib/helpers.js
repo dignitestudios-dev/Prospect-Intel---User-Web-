@@ -493,6 +493,263 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     align: "right",
   });
 
+  // ────────────────────────────────────────────────────────────
+  // PAGE 2 — Overview & Grading Scale
+  // ────────────────────────────────────────────────────────────
+  doc.addPage();
+  let p2Y = M;
+
+  // ── Grade helpers ───────────────────────────────────────────
+  const normalizeGrade = (score) => {
+    if (!score) return null;
+    return String(score).trim().toUpperCase();
+  };
+
+  const gradeDescriptions = {
+    A: "Elite. Has outstanding character with no clear character flaws. Will clearly stand out among his teammates. Strong positive influence. He will likely overcome potential deficiencies due to this outstanding component.",
+    B: "Good. Displays solid overall character characteristics. Teammates and coaches will notice his positive traits during normal interactions with this player. Could overcome potential deficiencies in some areas.",
+    C: "Adequate/Blend In. Not necessarily a negative, but unlikely to be a positive. Average in all characteristics for the most part. This prospect possesses characteristics to survive and get by. He will not add or subtract to the culture.",
+    D: "Has a character deficiency. He may display negative character in flashes. May not be fatal character but will likely limit his ability to perform and develop. Teammates and coaches will notice deficiencies.",
+    F: "Fatal characteristics. Will likely fail at the next level and likely to be a distraction to his teammates and coaches.",
+  };
+
+  const gradeColors = {
+    A: [0, 0, 0], // black
+    B: [29, 184, 99], // green
+    C: [181, 181, 181], // gray
+    D: [249, 201, 51], // yellow
+    F: [255, 58, 58], // red
+  };
+
+  const gradeLabels = {
+    A: "Elite",
+    B: "Good",
+    C: "Adequate / Blend In",
+    D: "Character Deficiency",
+    F: "Fatal Characteristics",
+  };
+
+  const getGradeColor = (score) =>
+    gradeColors[normalizeGrade(score)] || [181, 181, 181];
+
+  // ── Helper: wrapped text block, returns new y ───────────────
+  const textBlock = (text, x, y, maxW, size, color, style = "normal") => {
+    doc.setFont("helvetica", style);
+    doc.setFontSize(size);
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(String(text || ""), maxW);
+    doc.text(lines, x, y);
+    return y + lines.length * (size * 1.35);
+  };
+
+  // ════════════════════════════════════════════════════════════
+  // SECTION 1 — OVERVIEW
+  // ════════════════════════════════════════════════════════════
+
+  // Section title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(...BLACK);
+  doc.text("Overview", PW / 2, p2Y + 14, { align: "center" });
+  p2Y += 30;
+
+  const OV_W = (PW - M * 2 - 10) / 2; // each panel width
+  const OV_RX = M + OV_W + 10; // right panel x
+  const OV_PAD = 10;
+
+  // Measure both lists to get panel height
+  const strengths = athleteDetail?.overview?.strengths || [];
+  const weaknesses = athleteDetail?.overview?.weaknesses || [];
+  const listItemH = 16;
+  const OV_H = Math.max(strengths.length, weaknesses.length) * listItemH + 50;
+
+  // Left panel — STRENGTH
+  strokeRect(M, p2Y, OV_W, OV_H, MGRAY, 0.5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(...BLACK);
+  doc.text("STRENGTH", M + OV_W / 2, p2Y + 18, { align: "center" });
+  doc.setDrawColor(...MGRAY);
+  doc.line(M, p2Y + 24, M + OV_W, p2Y + 24);
+
+  if (strengths.length > 0) {
+    strengths.forEach((item, i) => {
+      const iy = p2Y + 38 + i * listItemH;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(37, 99, 235); // blue bullet ✦
+      doc.text("✦", M + OV_PAD, iy);
+      doc.setTextColor(...BLACK);
+      const lines = doc.splitTextToSize(item, OV_W - OV_PAD * 2 - 12);
+      doc.text(lines, M + OV_PAD + 12, iy);
+    });
+  } else {
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8.5);
+    doc.setTextColor(150, 150, 150);
+    doc.text("No strengths listed.", M + OV_PAD, p2Y + 38);
+  }
+
+  // Right panel — WEAKNESS
+  strokeRect(OV_RX, p2Y, OV_W, OV_H, MGRAY, 0.5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(...BLACK);
+  doc.text("WEAKNESS", OV_RX + OV_W / 2, p2Y + 18, { align: "center" });
+  doc.setDrawColor(...MGRAY);
+  doc.line(OV_RX, p2Y + 24, OV_RX + OV_W, p2Y + 24);
+
+  if (weaknesses.length > 0) {
+    weaknesses.forEach((item, i) => {
+      const iy = p2Y + 38 + i * listItemH;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(239, 68, 68); // red bullet ✚
+      doc.text("✚", OV_RX + OV_PAD, iy);
+      doc.setTextColor(...BLACK);
+      const lines = doc.splitTextToSize(item, OV_W - OV_PAD * 2 - 12);
+      doc.text(lines, OV_RX + OV_PAD + 12, iy);
+    });
+  } else {
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8.5);
+    doc.setTextColor(150, 150, 150);
+    doc.text("No weaknesses listed.", OV_RX + OV_PAD, p2Y + 38);
+  }
+
+  p2Y += OV_H + 30;
+
+  // ════════════════════════════════════════════════════════════
+  // SECTION 2 — GRADING SCALE
+  // ════════════════════════════════════════════════════════════
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(...BLACK);
+  doc.text("Grading Scale", PW / 2, p2Y + 14, { align: "center" });
+  p2Y += 30;
+
+  const footballScore = athleteDetail?.athlete?.footballPiScore;
+  const personalScore = athleteDetail?.athlete?.personalPiScore;
+
+  const CARD_W = (PW - M * 2 - 10) / 2;
+  const CARD_H = 110;
+  const BADGE_SIZE = 32;
+  const C_PAD = 12;
+
+  // ── Draw a grading card (Football / Personal) ───────────────
+  const drawGradeCard = (x, y, w, h, score, title) => {
+    const bgColor = getGradeColor(score);
+    const grade = normalizeGrade(score);
+    const isDark = grade === "D"; // yellow card → black text
+    const textClr = isDark ? BLACK : WHITE;
+
+    // Background
+    fillRect(x, y, w, h, bgColor);
+    strokeRect(x, y, w, h, bgColor, 0);
+
+    // Badge (nested squares like the UI)
+    const bx = x + w / 2 - BADGE_SIZE / 2;
+    const by = y + C_PAD;
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(1.5);
+    doc.rect(bx, by, BADGE_SIZE, BADGE_SIZE, "S");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(...textClr);
+    doc.text(grade || "?", x + w / 2, by + BADGE_SIZE / 2 + 5, {
+      align: "center",
+    });
+
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(...textClr);
+    doc.text(title, x + w / 2, y + C_PAD + BADGE_SIZE + 16, {
+      align: "center",
+    });
+
+    // Description
+    const desc =
+      gradeDescriptions[grade] ||
+      (title === "Football Character"
+        ? athleteDetail?.athlete?.footballDescription
+        : athleteDetail?.athlete?.personalDescription) ||
+      "";
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...textClr);
+    const descLines = doc.splitTextToSize(desc, w - C_PAD * 2);
+    doc.text(descLines, x + w / 2, y + C_PAD + BADGE_SIZE + 30, {
+      align: "center",
+    });
+  };
+
+  drawGradeCard(M, p2Y, CARD_W, CARD_H, footballScore, "Football Character");
+  drawGradeCard(
+    M + CARD_W + 10,
+    p2Y,
+    CARD_W,
+    CARD_H,
+    personalScore,
+    "Personal Character",
+  );
+
+  p2Y += CARD_H + 20;
+
+  // ── Grade reference scale (5 tiles: A B C D F) ─────────────
+  const grades = ["A", "B", "C", "D", "F"];
+  const tileCount = grades.length;
+  const TILE_GAP = 6;
+  const TILE_W = (PW - M * 2 - TILE_GAP * (tileCount - 1)) / tileCount;
+  const TILE_H = 130;
+
+  grades.forEach((grade, idx) => {
+    const tx = M + idx * (TILE_W + TILE_GAP);
+    const ty = p2Y;
+    const bgClr = gradeColors[grade];
+    const isDark = grade === "D";
+    const txtClr = isDark ? BLACK : WHITE;
+
+    // Tile background
+    fillRect(tx, ty, TILE_W, TILE_H, bgClr);
+
+    // Badge
+    const bx = tx + TILE_W / 2 - 14;
+    const by = ty + 8;
+    doc.setDrawColor(...WHITE);
+    doc.setLineWidth(1);
+    doc.rect(bx, by, 28, 28, "S");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(...txtClr);
+    doc.text(grade, tx + TILE_W / 2, by + 20, { align: "center" });
+
+    // Grade label
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...txtClr);
+    doc.text(gradeLabels[grade], tx + TILE_W / 2, ty + 46, { align: "center" });
+
+    // Description
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...txtClr);
+    const dLines = doc.splitTextToSize(gradeDescriptions[grade], TILE_W - 8);
+    doc.text(dLines, tx + TILE_W / 2, ty + 58, { align: "center" });
+  });
+
+  p2Y += TILE_H + 20;
+
+  // ── Page 2 footer ───────────────────────────────────────────
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text(`Generated on ${new Date().toLocaleDateString()}`, M, PH - 12);
+  doc.text("PROSPECT INTEL — CONFIDENTIAL", PW - M, PH - 12, {
+    align: "right",
+  });
+
   // ── Save ────────────────────────────────────────────────────
   doc.save(`${athleteDetail?.basicInfo?.name || "Athlete_Profile"}.pdf`);
 };

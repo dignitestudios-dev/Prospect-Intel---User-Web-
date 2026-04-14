@@ -118,10 +118,10 @@ const DummyNavbar = () => {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, []);
   const navigate = useNavigate();
@@ -164,6 +164,7 @@ const DummyNavbar = () => {
         SuccessToast(response?.data?.message);
         refetch();
         notificationRefetch();
+        setIsNotifOpen(false);
       }
     } catch (err) {
       ErrorToast(err?.response?.data?.message);
@@ -211,7 +212,7 @@ const DummyNavbar = () => {
             />
 
             {isNotifOpen && (
-              <div ref={notifRef}>
+              <div ref={notifRef} onClick={(e) => e.stopPropagation()}>
                 <NotificationDropdown
                   noti={data?.data}
                   isLoading={isLoading}
@@ -268,7 +269,7 @@ const DummyNavbar = () => {
             />
 
             {isNotifOpen && (
-              <div ref={notifRef}>
+              <div ref={notifRef} onClick={(e) => e.stopPropagation()}>
                 <NotificationDropdown
                   noti={data?.data}
                   isLoading={isLoading}
@@ -417,6 +418,7 @@ const MobileMenu = ({
     </div>
   );
 };
+
 const NotificationDropdown = ({
   noti = [],
   handlePageChange,
@@ -430,7 +432,10 @@ const NotificationDropdown = ({
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-sm font-semibold text-gray-800">Notifications</h3>
         <button
-          onClick={handleReadAll}
+          onClick={(e) => {
+            e.stopPropagation(); // ✅ prevents closing
+            handleReadAll();
+          }}
           className="text-xs text-gray-400 hover:text-gray-600"
         >
           {readLoading ? "Read...." : "Read All"}
