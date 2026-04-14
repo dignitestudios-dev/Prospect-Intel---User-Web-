@@ -782,7 +782,10 @@ const Profile = () => {
                       label="Contact"
                       value={`${parent.contact ? `+1 ${parent.contact}` : "N/A"}`}
                     />
-                    <InfoRow label="DOB" value={formatDate(parent.dob)} />
+                    <InfoRow
+                      label="DOB"
+                      value={formatDate(parent.dob) || "N/A"}
+                    />
                   </div>
                 ))}
               </div>
@@ -812,7 +815,7 @@ const Profile = () => {
                         DOB
                       </span>
                       <span className="text-gray-600 text-sm">
-                        {formatDate(sibling?.dob)}
+                        {formatDate(sibling?.dob) || "N/A"}
                       </span>
                     </div>
                   </div>
