@@ -520,41 +520,156 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   currentY += twoColH + 16;
 
   // ── Football & Personal Character (side by side) ──────────────
+  // ── Character Table with PI Score Badge ─────────────────────
+  const getPiScoreColors = (score) => {
+    const grade = score?.charAt(0)?.toUpperCase();
+    if (grade === "A") return { bg: [19, 18, 18], text: [255, 255, 255] };
+    if (grade === "B") return { bg: [29, 184, 99], text: [255, 255, 255] };
+    if (grade === "C") return { bg: [144, 144, 144], text: [255, 255, 255] };
+    if (grade === "D") return { bg: [249, 201, 51], text: [255, 255, 255] };
+    if (grade === "F") return { bg: [255, 58, 58], text: [255, 255, 255] };
+    return { bg: [156, 163, 175], text: [255, 255, 255] }; // gray-400 fallback
+  };
+
+  const calcCharTableH = (w, rows) => {
+    const pad = 6;
+    const fontSize = 8.5;
+    doc.setFontSize(fontSize);
+    const bodyW = w - pad * 2;
+    const rowHeights = rows.map((row) => {
+      const lines = doc.splitTextToSize(val(row.value), bodyW);
+      return Math.max(18, lines.length * 11 + 12);
+    });
+    return 26 + rowHeights.reduce((a, b) => a + b, 0);
+  };
+
+  const drawCharTable = (x, y, w, title, rows) => {
+    const titleH = 26;
+    const pad = 8;
+    const fontSize = 8.5;
+
+    doc.setFontSize(fontSize);
+    const bodyW = w - pad * 2;
+
+    const rowHeights = rows.map((row) => {
+      const lines = doc.splitTextToSize(val(row.value), bodyW);
+      return Math.max(18, lines.length * 11 + 12);
+    });
+    const totalH = titleH + rowHeights.reduce((a, b) => a + b, 0);
+
+    // ── Outer border ──
+    strokeRect(x, y, w, totalH, MGRAY, 0.5);
+
+    // ── Title row background ──
+    fillRect(x, y, w, titleH, WHITE);
+    doc.setDrawColor(...MGRAY);
+    doc.line(x, y + titleH, x + w, y + titleH);
+
+    // ── Title text ──
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...BLACK);
+    doc.text(title, x + pad, y + titleH - 7);
+
+    // ── PI Score badge (flex-end, vertically centered in title row) ──
+    const piScore = rows[0]?.piValue;
+    if (piScore) {
+      const colors = getPiScoreColors(piScore);
+
+      const badgePadX = 6;
+      const badgePadY = 3;
+      const labelText = "PI Score";
+      const scoreText = String(piScore);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      const labelW = doc.getTextWidth(labelText);
+
+      doc.setFontSize(11);
+      const scoreW = doc.getTextWidth(scoreText);
+
+      const innerGap = 5;
+      const badgeW = badgePadX * 2 + labelW + innerGap + scoreW;
+      const badgeH = 18;
+      const badgeX = x + w - badgeW - pad;
+      const badgeY = y + (titleH - badgeH) / 2;
+
+      // Badge background
+      doc.setFillColor(...colors.bg);
+      doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 3, 3, "F");
+
+      // "PI Score" small label
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...colors.text);
+      doc.text(labelText, badgeX + badgePadX, badgeY + badgeH - 5);
+
+      // Score value larger
+      doc.setFontSize(11);
+      doc.text(
+        scoreText,
+        badgeX + badgePadX + labelW + innerGap,
+        badgeY + badgeH - 4,
+      );
+    }
+
+    // ── Body rows ──
+    let ry = y + titleH;
+    rows.forEach((row, i) => {
+      const rh = rowHeights[i];
+      if (i % 2 === 1) fillRect(x, ry, w, rh, LGRAY);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(fontSize);
+      doc.setTextColor(80, 80, 80);
+
+      const lines = doc.splitTextToSize(val(row.value), bodyW);
+      doc.text(lines, x + pad, ry + 12);
+
+      doc.setDrawColor(...MGRAY);
+      doc.line(x, ry + rh, x + w, ry + rh);
+      ry += rh;
+    });
+
+    return y + totalH;
+  };
+
+  // ── Football & Personal Character (side by side) ──────────────
   const charW = (PW - M * 2 - 10) / 2;
+
   const footballRows = [
     {
       label: "Football Character",
       value: athleteDetail?.athlete?.footballDescription,
+      piValue: athleteDetail?.athlete?.footballPiScore,
     },
   ];
   const personalRows = [
     {
       label: "Personal Character",
       value: athleteDetail?.athlete?.personalDescription,
+      piValue: athleteDetail?.athlete?.personalPiScore,
     },
   ];
+
+  // Use new calc function for accurate height
   const charBlockH = Math.max(
-    calcExpandingTableH(charW, footballRows, 120),
-    calcExpandingTableH(charW, personalRows, 120),
+    calcCharTableH(charW, footballRows),
+    calcCharTableH(charW, personalRows),
   );
 
   currentY = ensureSpace(currentY, charBlockH);
-  drawExpandingTable(
-    M,
-    currentY,
-    charW,
-    "Football Character",
-    footballRows,
-    120,
-  );
-  drawExpandingTable(
+
+  // Use new draw function
+  drawCharTable(M, currentY, charW, "Football Character", footballRows);
+  drawCharTable(
     M + charW + 10,
     currentY,
     charW,
     "Personal Character",
     personalRows,
-    120,
   );
+
   currentY += charBlockH + 16;
 
   // ── Other Relevant Information ────────────────────────────────
