@@ -169,13 +169,13 @@ export const formatAthleteForPDF = (athlete) => {
 // ============================================================
 
 export const generateAthletePDF = async (athleteDetail, formatDate) => {
-  console.log("🚀 ~ generateAthletePDF ~ athleteDetail:", athleteDetail);
   if (!athleteDetail) return;
 
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   const PW = doc.internal.pageSize.getWidth(); // 612
   const PH = doc.internal.pageSize.getHeight(); // 792
   const M = 24; // outer margin
+  const FOOTER_H = 20; // reserved at page bottom
 
   // ── Colour palette ──────────────────────────────────────────
   const NAVY = [10, 36, 99];
@@ -185,28 +185,64 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   const BLACK = [30, 30, 30];
   const CYAN = [0, 174, 239];
 
-  // ── Utility: safe string ────────────────────────────────────
+  // ── Safe string ─────────────────────────────────────────────
   const val = (v) =>
     v !== undefined && v !== null && v !== "" ? String(v) : "N/A";
 
-  // ── Drawing primitives ──────────────────────────────────────
+  // ── Drawing primitives ───────────────────────────────────────
   const fillRect = (x, y, w, h, rgb) => {
     doc.setFillColor(...rgb);
     doc.rect(x, y, w, h, "F");
   };
-
   const strokeRect = (x, y, w, h, rgb, lw = 0.5) => {
     doc.setDrawColor(...rgb);
     doc.setLineWidth(lw);
     doc.rect(x, y, w, h, "S");
   };
 
-  // ── Fixed-row table ─────────────────────────────────────────
-  // Each row has a fixed height (no text wrapping). Good for short values.
+  // ── Page header (repeated on every page) ─────────────────────
+  const HEADER_H = 36;
+  const addPageHeader = () => {
+    fillRect(0, 0, PW, HEADER_H, NAVY);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(...WHITE);
+    doc.text("PROSPECT INTEL PLAYER PROFILE", PW / 2, HEADER_H / 2 + 5, {
+      align: "center",
+    });
+  };
+
+  // ── Footer ───────────────────────────────────────────────────
+  const addPageFooter = () => {
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, M, PH - 10);
+    doc.text("PROSPECT INTEL — CONFIDENTIAL", PW - M, PH - 10, {
+      align: "right",
+    });
+  };
+
+  // ── Overflow guard ───────────────────────────────────────────
+  // Call BEFORE drawing any block. If block won't fit, flush footer,
+  // add a new page, draw the header, and return the reset cursor Y.
+  const ensureSpace = (currentY, neededH) => {
+    if (currentY + neededH > PH - FOOTER_H - M) {
+      addPageFooter();
+      doc.addPage();
+      addPageHeader();
+      return HEADER_H + 12;
+    }
+    return currentY;
+  };
+
+  // ── Fixed-row table (short values) ──────────────────────────
+  const calcTableH = (rows) => 22 + rows.length * 18;
+
   const drawTable = (x, y, w, title, rows, labelColW = 110) => {
     const rowH = 18;
     const titleH = 22;
-    const padding = 6;
+    const pad = 6;
     const totalH = titleH + rows.length * rowH;
 
     strokeRect(x, y, w, totalH, MGRAY, 0.5);
@@ -214,26 +250,24 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     doc.setDrawColor(...MGRAY);
     doc.setLineWidth(0.5);
     doc.line(x, y + titleH, x + w, y + titleH);
-
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(...BLACK);
-    doc.text(title, x + padding, y + titleH - 6);
+    doc.text(title, x + pad, y + titleH - 6);
 
     rows.forEach((row, i) => {
       const ry = y + titleH + i * rowH;
       if (i % 2 === 1) fillRect(x, ry, w, rowH, LGRAY);
-
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
       doc.setTextColor(80, 80, 80);
-      doc.text(val(row.label), x + padding, ry + rowH - 5);
-
+      doc.text(val(row.label), x + pad, ry + rowH - 5);
       doc.setTextColor(...BLACK);
-      const valueW = w - labelColW - padding * 2;
-      const lines = doc.splitTextToSize(val(row.value), valueW);
-      doc.text(lines[0] || "N/A", x + labelColW + padding, ry + rowH - 5);
-
+      const lines = doc.splitTextToSize(
+        val(row.value),
+        w - labelColW - pad * 2,
+      );
+      doc.text(lines[0] || "N/A", x + labelColW + pad, ry + rowH - 5);
       doc.setDrawColor(...MGRAY);
       doc.line(x, ry + rowH, x + w, ry + rowH);
     });
@@ -241,21 +275,28 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     return y + totalH;
   };
 
-  // ── Auto-expanding table ────────────────────────────────────
-  // Row height grows to fit wrapped text. Good for long descriptions.
+  // ── Auto-expanding table (wrapping values) ───────────────────
+  const calcExpandingTableH = (w, rows, labelColW = 110) => {
+    const pad = 6;
+    const valueColW = w - labelColW - pad * 2;
+    const rowHeights = rows.map((row) => {
+      const lines = doc.splitTextToSize(val(row.value), valueColW);
+      return Math.max(18, lines.length * 11 + 6);
+    });
+    return 22 + rowHeights.reduce((a, b) => a + b, 0);
+  };
+
   const drawExpandingTable = (x, y, w, title, rows, labelColW = 110) => {
-    const minRowH = 18;
     const titleH = 22;
-    const padding = 6;
+    const pad = 6;
     const fontSize = 8.5;
-    const valueColW = w - labelColW - padding * 2;
+    const valueColW = w - labelColW - pad * 2;
 
     doc.setFontSize(fontSize);
     const rowHeights = rows.map((row) => {
       const lines = doc.splitTextToSize(val(row.value), valueColW);
-      return Math.max(minRowH, lines.length * 11 + 6);
+      return Math.max(18, lines.length * 11 + 6);
     });
-
     const totalH = titleH + rowHeights.reduce((a, b) => a + b, 0);
 
     strokeRect(x, y, w, totalH, MGRAY, 0.5);
@@ -265,22 +306,19 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(...BLACK);
-    doc.text(title, x + padding, y + titleH - 6);
+    doc.text(title, x + pad, y + titleH - 6);
 
     let ry = y + titleH;
     rows.forEach((row, i) => {
       const rh = rowHeights[i];
       if (i % 2 === 1) fillRect(x, ry, w, rh, LGRAY);
-
       doc.setFont("helvetica", "normal");
       doc.setFontSize(fontSize);
       doc.setTextColor(80, 80, 80);
-      doc.text(val(row.label), x + padding, ry + 12);
-
+      doc.text(val(row.label), x + pad, ry + 12);
       doc.setTextColor(...BLACK);
       const lines = doc.splitTextToSize(val(row.value), valueColW);
-      doc.text(lines, x + labelColW + padding, ry + 12);
-
+      doc.text(lines, x + labelColW + pad, ry + 12);
       doc.setDrawColor(...MGRAY);
       doc.line(x, ry + rh, x + w, ry + rh);
       ry += rh;
@@ -289,75 +327,51 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     return y + totalH;
   };
 
-  // ── GPA highlight bar ───────────────────────────────────────
+  // ── GPA bar ──────────────────────────────────────────────────
   const drawGPABar = (x, y, w, gpaValue) => {
     const barH = 26;
     strokeRect(x, y, w, barH, MGRAY, 0.5);
-
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(...BLACK);
     doc.text("GPA", x + 6, y + 17);
-
     doc.setFontSize(14);
     doc.setTextColor(...NAVY);
     doc.text(val(gpaValue), x + w - 6, y + 17, { align: "right" });
-
     return y + barH;
   };
 
-  // ────────────────────────────────────────────────────────────
-  // 1. HEADER BAR
-  // ────────────────────────────────────────────────────────────
-  const HEADER_H = 36;
-  fillRect(0, 0, PW, HEADER_H, NAVY);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.setTextColor(...WHITE);
-  doc.text("PROSPECT INTEL PLAYER PROFILE", PW / 2, HEADER_H / 2 + 5, {
-    align: "center",
-  });
+  // ════════════════════════════════════════════════════════════
+  // PAGE 1
+  // ════════════════════════════════════════════════════════════
+  addPageHeader();
 
-  // ────────────────────────────────────────────────────────────
-  // 2. TOP SECTION  (photo + logo  |  Athlete Profile table)
-  // ────────────────────────────────────────────────────────────
+  // ── Top section: photo + logo  |  Athlete Profile ────────────
   const TOP_Y = HEADER_H + 12;
   const PHOTO_W = 120;
   const PHOTO_H = 140;
 
-  // --- Athlete photo ---
+  // Athlete photo
   const athleteImage = athleteDetail?.basicInfo?.image;
-
   if (athleteImage) {
     try {
       const response = await axiosinstance.post("/user/buffer/s3", {
         s3Url: athleteImage,
       });
-
-      // ✅ Correctly access the nested buffer array: response.data.data.data
       const bufferArray = response?.data?.data?.data;
-
       if (!bufferArray || !bufferArray.length)
         throw new Error("Invalid buffer");
 
-      // Convert to base64 (chunked to avoid call stack overflow)
       const uint8Array = new Uint8Array(bufferArray);
       let binary = "";
       const chunkSize = 0x8000;
-
       for (let i = 0; i < uint8Array.length; i += chunkSize) {
-        const chunk = uint8Array.subarray(i, i + chunkSize);
-        binary += String.fromCharCode(...chunk);
+        binary += String.fromCharCode(...uint8Array.subarray(i, i + chunkSize));
       }
-
       const base64 = `data:image/jpeg;base64,${btoa(binary)}`;
-
       strokeRect(M, TOP_Y, PHOTO_W, PHOTO_H, MGRAY, 1);
       doc.addImage(base64, "JPEG", M, TOP_Y, PHOTO_W, PHOTO_H);
-    } catch (error) {
-      console.error("Image load failed:", error);
-
-      // Fallback placeholder
+    } catch {
       strokeRect(M, TOP_Y, PHOTO_W, PHOTO_H, MGRAY, 1);
       fillRect(M, TOP_Y, PHOTO_W, PHOTO_H, [230, 230, 230]);
       doc.setFont("helvetica", "italic");
@@ -367,11 +381,12 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
         "Athlete Photo Not Provided",
         M + PHOTO_W / 2,
         TOP_Y + PHOTO_H / 2,
-        { align: "center" },
+        {
+          align: "center",
+        },
       );
     }
   } else {
-    // No image — show placeholder box
     strokeRect(M, TOP_Y, PHOTO_W, PHOTO_H, MGRAY, 1);
     fillRect(M, TOP_Y, PHOTO_W, PHOTO_H, [230, 230, 230]);
     doc.setFont("helvetica", "italic");
@@ -381,44 +396,27 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       align: "center",
     });
   }
-  // To embed a real photo (base64):
-  // const photoData = athleteDetail?.basicInfo?.photoBase64;
-  // if (photoData) doc.addImage(photoData, "JPEG", M, TOP_Y, PHOTO_W, PHOTO_H);
 
-  // --- PI Shield logo ---
-  const LOGO_X = M + PHOTO_W + 10;
-  const LOGO_Y = TOP_Y + 10;
+  // PI logo
+  try {
+    const getBase64FromUrl = async (url) => {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    };
+    const logoBase64 = await getBase64FromUrl(prospectLogo);
+    doc.addImage(logoBase64, "PNG", M + PHOTO_W + 10, TOP_Y + 10, 90, 90);
+  } catch {
+    // silent — logo is cosmetic
+  }
 
-  const getBase64FromUrl = async (url) => {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(blob);
-    });
-  };
-
-  const logoBase64 = await getBase64FromUrl(prospectLogo);
-  doc.addImage(logoBase64, "PNG", LOGO_X, LOGO_Y, 90, 90);
-
-  // --- Athlete Profile table (top right) ---
+  // Athlete Profile table (top right)
   const RIGHT_X = PW / 2 + 4;
   const RIGHT_W = PW - RIGHT_X - M;
-
-  const siblings = athleteDetail?.family?.siblings;
-
-  const formattedSiblings =
-    siblings && siblings.length > 0
-      ? siblings
-          .map((s) => {
-            const name = s.name || "Unknown";
-            const type = s.type || "";
-            const dob = s.dob ? ` (DOB: ${formatDate(s.dob)})` : "";
-            return `${type}: ${name}${dob}`;
-          })
-          .join(", ")
-      : "N/A";
 
   const athleteProfileRows = [
     { label: "Name", value: athleteDetail?.basicInfo?.name },
@@ -431,17 +429,25 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   ];
   drawTable(RIGHT_X, TOP_Y, RIGHT_W, "Athlete Profile", athleteProfileRows, 80);
 
-  // ────────────────────────────────────────────────────────────
-  // 3. BOTTOM SECTION
-  //    Left  → Family Background
-  //    Right → GPA bar  +  Athletic Background
-  // ────────────────────────────────────────────────────────────
-  const BOT_Y = TOP_Y + PHOTO_H + 20;
+  // ── Siblings formatting ───────────────────────────────────────
+  const siblings = athleteDetail?.family?.siblings;
+  const formattedSiblings =
+    siblings && siblings.length > 0
+      ? siblings
+          .map((s) => {
+            const name = s.name || "Unknown";
+            const type = s.type || "";
+            const dob = s.dob ? ` (DOB: ${formatDate(s.dob)})` : "";
+            return `${type}: ${name}${dob}`;
+          })
+          .join(", ")
+      : "N/A";
+
+  // ── Row data ─────────────────────────────────────────────────
   const LEFT_W = PW / 2 - M - 8;
   const BRIGHT_X = PW / 2 + 4;
   const BRIGHT_W = PW - BRIGHT_X - M;
 
-  // --- Family Background (bottom left) ---
   const familyRows = [
     { label: "Mom", value: athleteDetail?.family?.motherName },
     {
@@ -475,13 +481,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
         athleteDetail?.family?.otherInfo || athleteDetail?.athlete?.otherInfo,
     },
   ];
-  drawExpandingTable(M, BOT_Y, LEFT_W, "Family Background", familyRows, 110);
 
-  // --- GPA bar (bottom right, above Athletic Background) ---
-  const gpaValue = athleteDetail?.basicInfo?.gpa || athleteDetail?.athlete?.gpa;
-  const afterGPA = drawGPABar(BRIGHT_X, BOT_Y, BRIGHT_W, gpaValue) + 10;
-
-  // --- Athletic Background (bottom right, below GPA) ---
   const athleticRows = [
     { label: "Other sports", value: athleteDetail?.athlete?.otherSports },
     { label: "Other activities", value: athleteDetail?.athlete?.activities },
@@ -490,6 +490,23 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       value: athleteDetail?.athlete?.coachEvaluation,
     },
   ];
+
+  const gpaValue = athleteDetail?.basicInfo?.gpa || athleteDetail?.athlete?.gpa;
+
+  // Pre-calculate column heights so we advance Y past the TALLER column
+  const familyH = calcExpandingTableH(LEFT_W, familyRows, 110);
+  const athleticH = calcExpandingTableH(BRIGHT_W, athleticRows, 130);
+  const GPA_BAR_H = 36; // bar + gap
+  const rightColH = GPA_BAR_H + athleticH;
+  const twoColH = Math.max(familyH, rightColH);
+
+  // Ensure the two-column block fits; page-break if needed
+  let currentY = TOP_Y + PHOTO_H + 20;
+  currentY = ensureSpace(currentY, twoColH);
+
+  // Draw both columns at the same Y
+  drawExpandingTable(M, currentY, LEFT_W, "Family Background", familyRows, 110);
+  const afterGPA = drawGPABar(BRIGHT_X, currentY, BRIGHT_W, gpaValue) + 10;
   drawExpandingTable(
     BRIGHT_X,
     afterGPA,
@@ -499,31 +516,80 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     130,
   );
 
-  // ────────────────────────────────────────────────────────────
-  // 4. FOOTER
-  // ────────────────────────────────────────────────────────────
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`Generated on ${new Date().toLocaleDateString()}`, M, PH - 12);
-  doc.text("PROSPECT INTEL — CONFIDENTIAL", PW - M, PH - 12, {
-    align: "right",
-  });
+  // Advance past the taller column
+  currentY += twoColH + 16;
 
-  // ────────────────────────────────────────────────────────────
+  // ── Football & Personal Character (side by side) ──────────────
+  const charW = (PW - M * 2 - 10) / 2;
+  const footballRows = [
+    {
+      label: "Football Character",
+      value: athleteDetail?.athlete?.footballDescription,
+    },
+  ];
+  const personalRows = [
+    {
+      label: "Personal Character",
+      value: athleteDetail?.athlete?.personalDescription,
+    },
+  ];
+  const charBlockH = Math.max(
+    calcExpandingTableH(charW, footballRows, 120),
+    calcExpandingTableH(charW, personalRows, 120),
+  );
+
+  currentY = ensureSpace(currentY, charBlockH);
+  drawExpandingTable(
+    M,
+    currentY,
+    charW,
+    "Football Character",
+    footballRows,
+    120,
+  );
+  drawExpandingTable(
+    M + charW + 10,
+    currentY,
+    charW,
+    "Personal Character",
+    personalRows,
+    120,
+  );
+  currentY += charBlockH + 16;
+
+  // ── Other Relevant Information ────────────────────────────────
+  const otherRows = [
+    {
+      label: "Other Relevant Information",
+      value: athleteDetail?.athlete?.otherInfo,
+    },
+  ];
+  const otherH = calcExpandingTableH(PW - M * 2, otherRows, 120);
+
+  currentY = ensureSpace(currentY, otherH);
+  drawExpandingTable(
+    M,
+    currentY,
+    PW - M * 2,
+    "Other Relevant Information",
+    otherRows,
+    120,
+  );
+
+  // Page 1 footer
+  addPageFooter();
+
+  // ════════════════════════════════════════════════════════════
   // PAGE 2 — Overview & Grading Scale
-  // ────────────────────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════
   doc.addPage();
-  let p2Y = M;
+  addPageHeader();
+  let p2Y = HEADER_H + 20;
 
-  // ── Grade helpers ───────────────────────────────────────────
+  // ── Grade helpers ────────────────────────────────────────────
   const normalizeGrade = (score) => {
     if (!score) return null;
-
-    const grade = String(score).trim().toUpperCase();
-
-    // ✅ Extract only first letter (A, B, C, D, F)
-    return grade.charAt(0);
+    return String(score).trim().toUpperCase().charAt(0);
   };
 
   const gradeDescriptions = {
@@ -535,11 +601,11 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   };
 
   const gradeColors = {
-    A: [0, 0, 0], // black
-    B: [29, 184, 99], // green
-    C: [181, 181, 181], // gray
-    D: [249, 201, 51], // yellow
-    F: [255, 58, 58], // red
+    A: [0, 0, 0],
+    B: [29, 184, 99],
+    C: [181, 181, 181],
+    D: [249, 201, 51],
+    F: [255, 58, 58],
   };
 
   const gradeLabels = {
@@ -553,38 +619,40 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   const getGradeColor = (score) =>
     gradeColors[normalizeGrade(score)] || [181, 181, 181];
 
-  // ── Helper: wrapped text block, returns new y ───────────────
-  const textBlock = (text, x, y, maxW, size, color, style = "normal") => {
-    doc.setFont("helvetica", style);
-    doc.setFontSize(size);
-    doc.setTextColor(...color);
-    const lines = doc.splitTextToSize(String(text || ""), maxW);
-    doc.text(lines, x, y);
-    return y + lines.length * (size * 1.35);
-  };
-
-  // ════════════════════════════════════════════════════════════
-  // SECTION 1 — OVERVIEW
-  // ════════════════════════════════════════════════════════════
-
-  // Section title
+  // ── Overview ─────────────────────────────────────────────────
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(...BLACK);
   doc.text("Overview", PW / 2, p2Y + 14, { align: "center" });
   p2Y += 30;
 
-  const OV_W = (PW - M * 2 - 10) / 2; // each panel width
-  const OV_RX = M + OV_W + 10; // right panel x
+  const OV_W = (PW - M * 2 - 10) / 2;
+  const OV_RX = M + OV_W + 10;
   const OV_PAD = 10;
 
-  // Measure both lists to get panel height
   const strengths = athleteDetail?.overview?.strengths || [];
   const weaknesses = athleteDetail?.overview?.weaknesses || [];
   const listItemH = 16;
-  const OV_H = Math.max(strengths.length, weaknesses.length) * listItemH + 50;
 
-  // Left panel — STRENGTH
+  // Accurately measure panel height including wrapped items
+  doc.setFontSize(8.5);
+  const measureListH = (items) =>
+    items.reduce(
+      (total, item) => {
+        const lines = doc.splitTextToSize(item, OV_W - OV_PAD * 2 - 12);
+        return total + Math.max(listItemH, lines.length * 11 + 4);
+      },
+      50, // header + top padding
+    );
+
+  const OV_H = Math.max(
+    strengths.length > 0 ? measureListH(strengths) : 66,
+    weaknesses.length > 0 ? measureListH(weaknesses) : 66,
+  );
+
+  p2Y = ensureSpace(p2Y, OV_H);
+
+  // Strength panel
   strokeRect(M, p2Y, OV_W, OV_H, MGRAY, 0.5);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -594,15 +662,16 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   doc.line(M, p2Y + 24, M + OV_W, p2Y + 24);
 
   if (strengths.length > 0) {
-    strengths.forEach((item, i) => {
-      const iy = p2Y + 38 + i * listItemH;
+    let sy = p2Y + 38;
+    strengths.forEach((item) => {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
-      doc.setTextColor(37, 99, 235); // blue bullet ✦
-      doc.text("✦", M + OV_PAD, iy);
+      doc.setTextColor(37, 99, 235);
+      doc.text("✦", M + OV_PAD, sy);
       doc.setTextColor(...BLACK);
       const lines = doc.splitTextToSize(item, OV_W - OV_PAD * 2 - 12);
-      doc.text(lines, M + OV_PAD + 12, iy);
+      doc.text(lines, M + OV_PAD + 12, sy);
+      sy += Math.max(listItemH, lines.length * 11 + 4);
     });
   } else {
     doc.setFont("helvetica", "italic");
@@ -611,7 +680,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     doc.text("No strengths listed.", M + OV_PAD, p2Y + 38);
   }
 
-  // Right panel — WEAKNESS
+  // Weakness panel
   strokeRect(OV_RX, p2Y, OV_W, OV_H, MGRAY, 0.5);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -621,15 +690,16 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   doc.line(OV_RX, p2Y + 24, OV_RX + OV_W, p2Y + 24);
 
   if (weaknesses.length > 0) {
-    weaknesses.forEach((item, i) => {
-      const iy = p2Y + 38 + i * listItemH;
+    let wy = p2Y + 38;
+    weaknesses.forEach((item) => {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
-      doc.setTextColor(239, 68, 68); // red bullet ✚
-      doc.text("✚", OV_RX + OV_PAD, iy);
+      doc.setTextColor(239, 68, 68);
+      doc.text("✚", OV_RX + OV_PAD, wy);
       doc.setTextColor(...BLACK);
       const lines = doc.splitTextToSize(item, OV_W - OV_PAD * 2 - 12);
-      doc.text(lines, OV_RX + OV_PAD + 12, iy);
+      doc.text(lines, OV_RX + OV_PAD + 12, wy);
+      wy += Math.max(listItemH, lines.length * 11 + 4);
     });
   } else {
     doc.setFont("helvetica", "italic");
@@ -640,10 +710,8 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
 
   p2Y += OV_H + 30;
 
-  // ════════════════════════════════════════════════════════════
-  // SECTION 2 — GRADING SCALE
-  // ════════════════════════════════════════════════════════════
-
+  // ── Grading Scale ────────────────────────────────────────────
+  p2Y = ensureSpace(p2Y, 20);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(...BLACK);
@@ -652,45 +720,37 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
 
   const footballScore = athleteDetail?.athlete?.footballPiScore;
   const personalScore = athleteDetail?.athlete?.personalPiScore;
-
   const CARD_W = (PW - M * 2 - 10) / 2;
-  const CARD_H = 110;
-  const BADGE_SIZE = 32;
+  const CARD_H = 120;
+  const BADGE_SZ = 32;
   const C_PAD = 12;
 
-  // ── Draw a grading card (Football / Personal) ───────────────
+  p2Y = ensureSpace(p2Y, CARD_H);
+
   const drawGradeCard = (x, y, w, h, score, title) => {
     const bgColor = getGradeColor(score);
     const grade = normalizeGrade(score);
-    const isDark = grade === "D"; // yellow card → black text
+    const isDark = grade === "D";
     const textClr = isDark ? BLACK : WHITE;
 
-    // Background
     fillRect(x, y, w, h, bgColor);
-    strokeRect(x, y, w, h, bgColor, 0);
 
-    // Badge (nested squares like the UI)
-    const bx = x + w / 2 - BADGE_SIZE / 2;
+    const bx = x + w / 2 - BADGE_SZ / 2;
     const by = y + C_PAD;
-    doc.setDrawColor(255, 255, 255);
+    doc.setDrawColor(...WHITE);
     doc.setLineWidth(1.5);
-    doc.rect(bx, by, BADGE_SIZE, BADGE_SIZE, "S");
+    doc.rect(bx, by, BADGE_SZ, BADGE_SZ, "S");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(...textClr);
-    doc.text(grade || "?", x + w / 2, by + BADGE_SIZE / 2 + 5, {
+    doc.text(grade || "?", x + w / 2, by + BADGE_SZ / 2 + 6, {
       align: "center",
     });
 
-    // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(...textClr);
-    doc.text(title, x + w / 2, y + C_PAD + BADGE_SIZE + 16, {
-      align: "center",
-    });
-
-    // Description
+    doc.text(title, x + w / 2, y + C_PAD + BADGE_SZ + 18, { align: "center" });
 
     const desc =
       gradeDescriptions[grade] ||
@@ -698,12 +758,11 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
         ? athleteDetail?.athlete?.footballDescription
         : athleteDetail?.athlete?.personalDescription) ||
       "";
-
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...textClr);
     const descLines = doc.splitTextToSize(desc, w - C_PAD * 2);
-    doc.text(descLines, x + w / 2, y + C_PAD + BADGE_SIZE + 30, {
+    doc.text(descLines, x + w / 2, y + C_PAD + BADGE_SZ + 32, {
       align: "center",
     });
   };
@@ -717,15 +776,15 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     personalScore,
     "Personal Character",
   );
-
   p2Y += CARD_H + 20;
 
-  // ── Grade reference scale (5 tiles: A B C D F) ─────────────
+  // ── Reference tiles A–F ──────────────────────────────────────
   const grades = ["A", "B", "C", "D", "F"];
-  const tileCount = grades.length;
   const TILE_GAP = 6;
-  const TILE_W = (PW - M * 2 - TILE_GAP * (tileCount - 1)) / tileCount;
-  const TILE_H = 130;
+  const TILE_W = (PW - M * 2 - TILE_GAP * (grades.length - 1)) / grades.length;
+  const TILE_H = 140;
+
+  p2Y = ensureSpace(p2Y, TILE_H);
 
   grades.forEach((grade, idx) => {
     const tx = M + idx * (TILE_W + TILE_GAP);
@@ -734,10 +793,8 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     const isDark = grade === "D";
     const txtClr = isDark ? BLACK : WHITE;
 
-    // Tile background
     fillRect(tx, ty, TILE_W, TILE_H, bgClr);
 
-    // Badge
     const bx = tx + TILE_W / 2 - 14;
     const by = ty + 8;
     doc.setDrawColor(...WHITE);
@@ -748,31 +805,21 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     doc.setTextColor(...txtClr);
     doc.text(grade, tx + TILE_W / 2, by + 20, { align: "center" });
 
-    // Grade label
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.5);
     doc.setTextColor(...txtClr);
-    doc.text(gradeLabels[grade], tx + TILE_W / 2, ty + 46, { align: "center" });
+    doc.text(gradeLabels[grade], tx + TILE_W / 2, ty + 48, { align: "center" });
 
-    // Description
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.5);
     doc.setTextColor(...txtClr);
     const dLines = doc.splitTextToSize(gradeDescriptions[grade], TILE_W - 8);
-    doc.text(dLines, tx + TILE_W / 2, ty + 58, { align: "center" });
+    doc.text(dLines, tx + TILE_W / 2, ty + 60, { align: "center" });
   });
 
-  p2Y += TILE_H + 20;
+  // Page 2 footer
+  addPageFooter();
 
-  // ── Page 2 footer ───────────────────────────────────────────
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  doc.text(`Generated on ${new Date().toLocaleDateString()}`, M, PH - 12);
-  doc.text("PROSPECT INTEL — CONFIDENTIAL", PW - M, PH - 12, {
-    align: "right",
-  });
-
-  // ── Save ────────────────────────────────────────────────────
+  // ── Save ─────────────────────────────────────────────────────
   doc.save(`${athleteDetail?.basicInfo?.name || "Athlete_Profile"}.pdf`);
 };
