@@ -520,89 +520,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   currentY += twoColH + 16;
 
   // ── Football & Personal Character (side by side) ──────────────
-  // PI Score color mapping (matches web InfoBox component)
-  function getPiScoreColor(score) {
-    const grade = score?.charAt(0)?.toUpperCase();
-    if (grade === "A") return { bg: "#131212", text: "#FFFFFF" };
-    if (grade === "B") return { bg: "#1DB863", text: "#FFFFFF" };
-    if (grade === "C") return { bg: "#909090", text: "#FFFFFF" };
-    if (grade === "D") return { bg: "#F9C933", text: "#FFFFFF" };
-    if (grade === "F") return { bg: "#FF3A3A", text: "#FFFFFF" };
-    return { bg: "#9CA3AF", text: "#FFFFFF" }; // gray-400 fallback
-  }
-
-  // Draw PI Score badge (top-right of a section header)
-  function drawPiScoreBadge(x, y, score) {
-    if (!score) return;
-    const colors = getPiScoreColor(score);
-    const badgeW = 80;
-    const badgeH = 24;
-    const badgeX = x - badgeW; // right-align to x
-    const badgeY = y - badgeH / 2;
-
-    // Badge background
-    doc.setFillColor(colors.bg);
-    doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 3, 3, "F");
-
-    // "PI Score" label (small)
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.setTextColor("#FFFFFF");
-    doc.text("PI Score", badgeX + 6, badgeY + 9);
-
-    // Score value (larger)
-    doc.setFontSize(12);
-    doc.text(score, badgeX + 56, badgeY + 16);
-  }
-
-  // Updated drawExpandingTable header to support PI Score
-  function drawExpandingTableWithScore(x, y, w, title, rows, minH, piScore) {
-    const headerH = 32;
-    const HEADER_BG = "#0085CA"; // your existing header color
-
-    // Header background
-    doc.setFillColor(HEADER_BG);
-    doc.roundedRect(x, y, w, headerH, 4, 4, "F");
-
-    // Title text
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor("#FFFFFF");
-    doc.text(title, x + 10, y + 20);
-
-    // PI Score badge (right side of header)
-    if (piScore) {
-      const colors = getPiScoreColor(piScore);
-      const badgeW = 82;
-      const badgeH = 22;
-      const badgeX = x + w - badgeW - 8;
-      const badgeY = y + (headerH - badgeH) / 2;
-
-      // Badge bg
-      doc.setFillColor(colors.bg);
-      doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 3, 3, "F");
-
-      // Border
-      doc.setDrawColor("#D1D5DB");
-      doc.setLineWidth(0.3);
-      doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 3, 3, "S");
-
-      // "PI Score" label
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      doc.setTextColor("#FFFFFF");
-      doc.text("PI Score", badgeX + 5, badgeY + 9);
-
-      // Score value
-      doc.setFontSize(11);
-      doc.text(piScore, badgeX + 58, badgeY + 15);
-    }
-
-    // Then draw the rest of the table body as usual...
-    drawExpandingTable(x, y, w, title, rows, minH); // or inline body drawing
-  }
   const charW = (PW - M * 2 - 10) / 2;
-
   const footballRows = [
     {
       label: "Football Character",
@@ -615,35 +533,28 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       value: athleteDetail?.athlete?.personalDescription,
     },
   ];
-
   const charBlockH = Math.max(
     calcExpandingTableH(charW, footballRows, 120),
     calcExpandingTableH(charW, personalRows, 120),
   );
 
   currentY = ensureSpace(currentY, charBlockH);
-
-  // Pass piScore as the last argument
-  drawExpandingTableWithScore(
+  drawExpandingTable(
     M,
     currentY,
     charW,
     "Football Character",
     footballRows,
     120,
-    athleteDetail?.athlete?.footballPiScore, // "A", "B", etc.
   );
-
-  drawExpandingTableWithScore(
+  drawExpandingTable(
     M + charW + 10,
     currentY,
     charW,
     "Personal Character",
     personalRows,
     120,
-    athleteDetail?.athlete?.personalPiScore,
   );
-
   currentY += charBlockH + 16;
 
   // ── Other Relevant Information ────────────────────────────────
