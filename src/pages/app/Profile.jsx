@@ -829,7 +829,7 @@ const Profile = () => {
                   <img src={features} alt="Features" className="mr-2 text-xl" />
                   Key Influences
                 </h2>
-                <p className="text-gray-700 text-sm italic mt-4">
+                <p className="text-gray-700 text-sm mt-4">
                   {athleteDetail?.family?.keyInfluences}
                 </p>
               </div>
@@ -912,7 +912,7 @@ const Profile = () => {
               title="Other Relevant Information"
               icon={<img src={other} alt="Other" className="text-[#7A4D8B]" />}
             >
-              <p className="text-gray-700 text-sm italic ">
+              <p className="text-gray-700 text-sm ">
                 {athleteDetail?.athlete?.otherInfo || "N/A"}
               </p>
             </InfoBox>

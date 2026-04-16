@@ -667,7 +667,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
       doc.setTextColor(37, 99, 235);
-      doc.text("✦", M + OV_PAD, sy);
+      doc.text("✚", M + OV_PAD, sy);
       doc.setTextColor(...BLACK);
       const lines = doc.splitTextToSize(item, OV_W - OV_PAD * 2 - 12);
       doc.text(lines, M + OV_PAD + 12, sy);
