@@ -871,7 +871,7 @@ const Profile = () => {
                     <span className="mr-2">⚡</span> Coach Evaluation
                   </div>
 
-                  <p className="text-gray-600 text-sm leading-relaxed italic">
+                  <p className="text-gray-600 text-sm leading-relaxed ">
                     {athleteDetail?.athlete?.coachEvaluation || "N/A"}
                   </p>
                 </div>
