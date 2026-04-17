@@ -56,13 +56,13 @@ const InfoBox = ({ title, score, icon, children }) => {
   // ✅ color mapping
   const bgColor =
     grade === "A"
-      ? "bg-[#131212]"
+      ? "bg-[#0B3D2E]"
       : grade === "B"
         ? "bg-[#1DB863]"
         : grade === "C"
-          ? "bg-[#909090]"
+          ? "bg-[#F4D35E]"
           : grade === "D"
-            ? "bg-[#F9C933]"
+            ? "bg-[#FFB805]"
             : grade === "F"
               ? "bg-[#FF3A3A]"
               : "bg-gray-400";
@@ -142,10 +142,10 @@ const Profile = () => {
     const grade = score?.charAt(0)?.toUpperCase();
 
     const colorMap = {
-      A: "bg-[#0F0F0F]",
+      A: "bg-[#0B3D2E]",
       B: "bg-[#1DB863]",
-      C: "bg-[#909090]",
-      D: "bg-[#F9C933] text-black",
+      C: "bg-[#F4D35E]",
+      D: "bg-[#FFB805] text-black",
       F: "bg-[#FF3A3A]",
     };
 
@@ -1029,7 +1029,7 @@ const Profile = () => {
         </div>
 
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-          <div className="bg-black text-white rounded-xl p-6 flex flex-col items-center justify-center">
+          <div className="bg-[#0B3D2E] text-white rounded-xl p-6 flex flex-col items-center justify-center">
             <div className="w-12 h-12 flex items-center justify-center  border-white/40 rounded-lg  text-white text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
               A
             </div>
@@ -1055,7 +1055,7 @@ const Profile = () => {
             </p>
           </div>
 
-          <div className="bg-[#B5B5B5] text-white rounded-xl p-6 flex flex-col items-center justify-center">
+          <div className="bg-[#F4D35E] text-white rounded-xl p-6 flex flex-col items-center justify-center">
             <div className="w-12 h-12 flex items-center justify-center  border-white/40 rounded-lg  text-white text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
               C
             </div>
@@ -1069,7 +1069,7 @@ const Profile = () => {
             </p>
           </div>
 
-          <div className="bg-[#F9C933] text-black rounded-xl p-6 flex flex-col items-center justify-center">
+          <div className="bg-[#FFB805] text-black rounded-xl p-6 flex flex-col items-center justify-center">
             <div className="w-12 h-12 flex items-center justify-center  border-white/40 rounded-lg  text-black text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
               D
             </div>
