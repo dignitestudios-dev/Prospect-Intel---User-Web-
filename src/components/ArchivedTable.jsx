@@ -28,10 +28,10 @@ const ArchivedTable = ({
     const grade = score?.charAt(0)?.toUpperCase();
 
     const colorMap = {
-      A: "bg-[#0F0F0F]",
+      A: "bg-[#0B3D2E]",
       B: "bg-[#1DB863]",
-      C: "bg-[#909090]",
-      D: "bg-[#F9C933] text-black",
+      C: "bg-[#F4D35E]",
+      D: "bg-[#FFB805] text-black",
       F: "bg-[#FF3A3A]",
     };
 
