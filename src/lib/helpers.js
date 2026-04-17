@@ -351,37 +351,65 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     return titleH + bodyH;
   };
 
-  // const drawKeyInfluence = (x, y, w, value) => {
-  //   const pad = 8;
-  //   const titleH = 22;
-  //   const fontSize = 8.5;
-  //   const bodyW = w - pad * 2;
+  const drawKeyInfluence = (x, y, w, value) => {
+    const pad = 8;
+    const titleH = 22;
+    const fontSize = 8.5;
+    const bodyW = w - pad * 2;
 
-  //   doc.setFontSize(fontSize);
-  //   const lines = doc.splitTextToSize(val(value), bodyW);
-  //   const bodyH = Math.max(18, lines.length * 11 + 12);
-  //   const totalH = titleH + bodyH;
+    doc.setFontSize(fontSize);
+    const lines = doc.splitTextToSize(val(value), bodyW);
+    const bodyH = Math.max(18, lines.length * 11 + 12);
+    const totalH = titleH + bodyH;
 
-  //   // ── Outer border ──
-  //   strokeRect(x, y, w, totalH, MGRAY, 0.5);
+    // ── Outer border ──
+    strokeRect(x, y, w, totalH, MGRAY, 0.5);
 
-  //   // ── Title row ──
-  //   fillRect(x, y, w, titleH, WHITE);
-  //   doc.setDrawColor(...MGRAY);
-  //   doc.line(x, y + titleH, x + w, y + titleH);
-  //   doc.setFont("helvetica", "bold");
-  //   doc.setFontSize(11);
-  //   doc.setTextColor(...BLACK);
-  //   doc.text("Key Influences", x + pad, y + titleH - 6);
+    // ── Title row ──
+    fillRect(x, y, w, titleH, WHITE);
+    doc.setDrawColor(...MGRAY);
+    doc.line(x, y + titleH, x + w, y + titleH);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...BLACK);
+    doc.text("Key Influences", x + pad, y + titleH - 6);
 
-  //   // ── Body text ──
-  //   doc.setFont("helvetica", "normal");
-  //   doc.setFontSize(fontSize);
-  //   doc.setTextColor(80, 80, 80);
-  //   doc.text(lines, x + pad, y + titleH + 11);
+    // ── Body text ──
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(fontSize);
+    doc.setTextColor(80, 80, 80);
+    doc.text(lines, x + pad, y + titleH + 11);
 
-  //   return y + totalH;
-  // };
+    return y + totalH;
+  };
+
+  const drawCoachEvaluation = (x, y, w, value) => {
+    const pad = 8;
+    const titleH = 22;
+    const fontSize = 8.5;
+    const bodyW = w - pad * 2;
+
+    doc.setFontSize(fontSize);
+    const lines = doc.splitTextToSize(val(value), bodyW);
+    const bodyH = Math.max(18, lines.length * 11 + 12);
+    const totalH = titleH + bodyH;
+
+    strokeRect(x, y, w, totalH, MGRAY, 0.5);
+    fillRect(x, y, w, titleH, WHITE);
+    doc.setDrawColor(...MGRAY);
+    doc.line(x, y + titleH, x + w, y + titleH);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...BLACK);
+    doc.text("Coach Evaluation", x + pad, y + titleH - 6);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(fontSize);
+    doc.setTextColor(80, 80, 80);
+    doc.text(lines, x + pad, y + titleH + 11);
+
+    return y + totalH;
+  };
 
   // ════════════════════════════════════════════════════════════
   // PAGE 1
@@ -534,7 +562,8 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   ];
 
   const gpaValue = athleteDetail?.basicInfo?.gpa || athleteDetail?.athlete?.gpa;
-  // const keyInfluenceValue = athleteDetail?.family?.keyInfluences || "N/A";
+  const keyInfluenceValue = athleteDetail?.family?.keyInfluences || "N/A";
+  const coachEvaluationValue = athleteDetail?.athlete?.coachEvaluation || "N/A";
 
   // Pre-calculate column heights so we advance Y past the TALLER column
   const familyH = calcExpandingTableH(LEFT_W, familyRows, 110);
@@ -548,16 +577,19 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   currentY = ensureSpace(currentY, twoColH);
 
   // Draw both columns at the same Y
+  // Draw both columns at the same Y
   drawExpandingTable(M, currentY, LEFT_W, "Family Background", familyRows, 110);
-  const afterGPA = drawGPABar(BRIGHT_X, currentY, BRIGHT_W, gpaValue) + 10;
 
-  // const afterCGPA =
-  //   drawKeyInfluence(BRIGHT_X, afterGPA, BRIGHT_W, keyInfluenceValue) + 10;
+  const afterGPA = drawGPABar(BRIGHT_X, currentY, BRIGHT_W, gpaValue) + 10;
+  const afterCGPA =
+    drawKeyInfluence(BRIGHT_X, afterGPA, BRIGHT_W, keyInfluenceValue) + 10;
+  const afterCoach =
+    drawCoachEvaluation(BRIGHT_X, afterCGPA, BRIGHT_W, coachEvaluationValue) +
+    10;
 
   drawExpandingTable(
     BRIGHT_X,
-    afterGPA,
-    // afterCGPA,
+    afterCoach, // ✅ chains below coach evaluation
     BRIGHT_W,
     "Athletic Background",
     athleticRows,
@@ -575,7 +607,13 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   // );
 
   // Advance past the taller column
-  currentY += twoColH + 16;
+  const leftColBottomY =
+    currentY + calcExpandingTableH(LEFT_W, familyRows, 110);
+  const rightColBottomY =
+    afterCoach + calcExpandingTableH(BRIGHT_W, athleticRows, 130);
+
+  currentY = Math.max(leftColBottomY, rightColBottomY) + 16;
+  // currentY += twoColH + 16;
 
   // ── Football & Personal Character (side by side) ──────────────
   // ── Character Table with PI Score Badge ─────────────────────
@@ -995,4 +1033,25 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
 
   // ── Save ─────────────────────────────────────────────────────
   doc.save(`${athleteDetail?.basicInfo?.name || "Athlete_Profile"}.pdf`);
+};
+
+// for phone number
+
+export const formatPhoneNumber = (phone) => {
+  if (!phone) return "N/A";
+
+  // keep digits only
+  const digits = phone.replace(/\D/g, "");
+
+  // remove leading 1 if present
+  const normalized =
+    digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+
+  // format 10-digit US number
+  if (normalized.length === 10) {
+    return `+1 (${normalized.slice(0, 3)}) ${normalized.slice(3, 6)}-${normalized.slice(6)}`;
+  }
+
+  // fallback
+  return phone;
 };

@@ -26,6 +26,7 @@ import { getAtheleteById } from "../../lib/query/queryFn";
 import {
   formatAthleteForCSV,
   formatDate,
+  formatPhoneNumber,
   generateAthletePDF,
 } from "../../lib/helpers";
 import axiosinstance from "../../axios";
@@ -780,7 +781,7 @@ const Profile = () => {
                     <InfoRow label="Occupation" value={parent.occupation} />
                     <InfoRow
                       label="Contact"
-                      value={`${parent.contact ? `+1 ${parent.contact}` : "N/A"}`}
+                      value={formatPhoneNumber(parent.contact)}
                     />
                     <InfoRow
                       label="DOB"
@@ -941,7 +942,7 @@ const Profile = () => {
                   </li>
                 ))
               ) : (
-                <li className="text-gray-500">No strengths listed.</li>
+                <li className="text-gray-500">Data Not found.</li>
               )}
             </ul>
           </div>
@@ -961,7 +962,7 @@ const Profile = () => {
                   </li>
                 ))
               ) : (
-                <li className="text-gray-500">No weaknesses listed.</li>
+                <li className="text-gray-500">Data Not found.</li>
               )}
             </ul>
           </div>

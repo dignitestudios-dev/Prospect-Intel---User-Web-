@@ -131,6 +131,7 @@ const DummyNavbar = () => {
     keepPreviousData: true,
     staleTime: 1000 * 60 * 5,
   });
+  console.log("🚀 ~ DummyNavbar ~ profile:", profile);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["notification", page],
@@ -184,7 +185,13 @@ const DummyNavbar = () => {
           className="h-10 cursor-pointer"
         />
         <div className="bg-white rounded-full p-1.5">
-          <span className="text-sm font-semibold text-[#0085CA]">PRO</span>
+          <span className="text-sm font-semibold text-[#0085CA]">
+            {profile?.subscriptionPlan === "Basic"
+              ? "Bsc"
+              : profile?.subscriptionPlan === "Premium"
+                ? "Pre"
+                : "Pro"}
+          </span>
           <span className="text-xs font-extralight text-gray-500 ml-2">
             (Ending on {formatDate(profile?.subscriptionEndDate)})
           </span>

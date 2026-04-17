@@ -120,6 +120,7 @@ const DummyHome = () => {
   });
 
   useEffect(() => {
+    setPage(1);
     const filters = {
       search,
       position: selectedPosition,
