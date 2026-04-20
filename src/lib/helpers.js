@@ -619,10 +619,10 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   // ── Character Table with PI Score Badge ─────────────────────
   const getPiScoreColors = (score) => {
     const grade = score?.charAt(0)?.toUpperCase();
-    if (grade === "A") return { bg: [19, 18, 18], text: [255, 255, 255] };
+    if (grade === "A") return { bg: [11, 61, 46], text: [255, 255, 255] };
     if (grade === "B") return { bg: [29, 184, 99], text: [255, 255, 255] };
-    if (grade === "C") return { bg: [144, 144, 144], text: [255, 255, 255] };
-    if (grade === "D") return { bg: [249, 201, 51], text: [255, 255, 255] };
+    if (grade === "C") return { bg: [244, 211, 94], text: [255, 255, 255] };
+    if (grade === "D") return { bg: [255, 184, 5], text: [255, 255, 255] };
     if (grade === "F") return { bg: [255, 58, 58], text: [255, 255, 255] };
     return { bg: [156, 163, 175], text: [255, 255, 255] }; // gray-400 fallback
   };
@@ -812,10 +812,10 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   };
 
   const gradeColors = {
-    A: [0, 0, 0],
+    A: [11, 61, 46],
     B: [29, 184, 99],
-    C: [181, 181, 181],
-    D: [249, 201, 51],
+    C: [244, 211, 94],
+    D: [255, 184, 5],
     F: [255, 58, 58],
   };
 
