@@ -10,6 +10,7 @@ import { logActivity } from "../../lib/store/actions/activityActions";
 import useDebounce, { useAppDispatch } from "../../lib/store/hook";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import axiosinstance from "../../axios";
+import { RefreshCcw } from "lucide-react";
 
 const positions = [
   { label: "QB", value: "Quarterback" },
@@ -81,14 +82,14 @@ const DummyHome = () => {
   const [cities, setCities] = useState([]);
   const [selectedGradeYear, setSelectedGradeYear] = useState("");
   const SchoolId = selectedSchool?.id || "";
-  const [status, setStatus] = useState(null);
+  const [status, setStatus] = useState("active");
   const isActive =
     status === "active" ? true : status === "inactive" ? false : "";
   const debouncedSearch = useDebounce(search, 500);
   const [selectedIds, setSelectedIds] = useState([]);
   const [csvExportLoading, setCsvExportLoading] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: [
       "athlete",
       page,
@@ -222,6 +223,12 @@ const DummyHome = () => {
     }
   };
 
+  const handleReferesh = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["athlete"],
+    });
+  };
+
   return (
     <div className="w-full min-h-screen h-full bg-[#F5F7FB] flex justify-center items-start font-sans ">
       <div className="w-full h-full bg-[#EAEEF8] border-2 border-gray-100 mb-2 overflow-auto">
@@ -246,7 +253,18 @@ const DummyHome = () => {
           </div>
 
           {/* Right Side Header Buttons and Account */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-20 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-10 w-full sm:w-auto">
+            <button
+              onClick={handleReferesh}
+              disabled={isFetching}
+              className={`flex items-center px-4 py-2 border border-white bg-[#EAEEF8] text-gray-700 rounded-lg text-sm shadow shadow-blue-200 transition-colors
+    ${isFetching ? "opacity-70 cursor-not-allowed" : "hover:bg-gray-50"}
+  `}
+            >
+              <RefreshCcw className="mr-2" size={16} />
+
+              <span>{isFetching ? "Syncing..." : "Sync"}</span>
+            </button>
             {!isArchived && (
               <div className="flex items-center space-x-3">
                 {/* <button className="flex items-center px-4 py-2 border border-white bg-[#EAEEF8] rounded-lg text-gray-700 text-sm shadow-sm hover:bg-gray-50 transition-colors">
