@@ -544,7 +544,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       value: athleteDetail?.family?.fatherContact,
     },
     { label: "Siblings", value: formattedSiblings },
-    { label: "Key Influences", value: athleteDetail?.family?.keyInfluences },
+    // { label: "Key Influences", value: athleteDetail?.family?.keyInfluences },
     // {
     //   label: "Other info",
     //   value:
