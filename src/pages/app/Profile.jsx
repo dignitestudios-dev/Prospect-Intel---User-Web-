@@ -994,11 +994,17 @@ const Profile = () => {
               Football Character
             </h3>
 
-            <p className="text-center text-sm opacity-90 leading-relaxed">
-              {gradeDescriptions[
-                normalizeGrade(athleteDetail?.athlete?.footballPiScore)
-              ] || athleteDetail?.athlete?.footballDescription}
-            </p>
+            {athleteDetail?.athlete?.footballPiScore === "N/A" ? (
+              <p className="text-center text-sm opacity-90 leading-relaxed">
+                N/A
+              </p>
+            ) : (
+              <p className="text-center text-sm opacity-90 leading-relaxed">
+                {gradeDescriptions[
+                  normalizeGrade(athleteDetail?.athlete?.footballPiScore)
+                ] || athleteDetail?.athlete?.footballDescription}
+              </p>
+            )}
           </div>
 
           <div
@@ -1019,12 +1025,17 @@ const Profile = () => {
             <h3 className="text-center text-3xl font-bold mb-4">
               Personal Character
             </h3>
-
-            <p className="text-center text-sm leading-relaxed opacity-90">
-              {gradeDescriptions[
-                normalizeGrade(athleteDetail?.athlete?.personalPiScore)
-              ] || athleteDetail?.athlete?.personalDescription}
-            </p>
+            {athleteDetail?.athlete?.personalPiScore === "N/A" ? (
+              <p className="text-center text-sm leading-relaxed opacity-90">
+                N/A
+              </p>
+            ) : (
+              <p className="text-center text-sm leading-relaxed opacity-90">
+                {gradeDescriptions[
+                  normalizeGrade(athleteDetail?.athlete?.personalPiScore)
+                ] || athleteDetail?.athlete?.personalDescription}
+              </p>
+            )}
           </div>
         </div>
 

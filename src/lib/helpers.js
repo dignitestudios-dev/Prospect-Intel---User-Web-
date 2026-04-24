@@ -528,12 +528,12 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       label: "Mom's contact info",
       value: athleteDetail?.family?.motherContact,
     },
-    {
-      label: "Mom's information",
-      value: athleteDetail?.family?.motherDob
-        ? `DOB- ${formatDate(athleteDetail.family.motherDob)}`
-        : "N/A",
-    },
+    // {
+    //   label: "Mom's information",
+    //   value: athleteDetail?.family?.motherDob
+    //     ? `DOB- ${formatDate(athleteDetail.family.motherDob)}`
+    //     : "N/A",
+    // },
     { label: "Dad", value: athleteDetail?.family?.fatherName },
     {
       label: "Dad's Occupation",
@@ -555,10 +555,10 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   const athleticRows = [
     { label: "Other sports", value: athleteDetail?.athlete?.otherSports },
     { label: "Other activities", value: athleteDetail?.athlete?.activities },
-    {
-      label: "Comments from other coaches",
-      value: athleteDetail?.athlete?.coachEvaluation,
-    },
+    // {
+    //   label: "Comments from other coaches",
+    //   value: athleteDetail?.athlete?.coachEvaluation,
+    // },
   ];
 
   const gpaValue = athleteDetail?.basicInfo?.gpa || athleteDetail?.athlete?.gpa;
