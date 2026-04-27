@@ -544,7 +544,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       value: athleteDetail?.family?.fatherContact,
     },
     { label: "Siblings", value: formattedSiblings },
-    // { label: "Key Influences", value: athleteDetail?.family?.keyInfluences },
+    { label: "Key Influences", value: athleteDetail?.family?.keyInfluences },
     // {
     //   label: "Other info",
     //   value:
@@ -562,7 +562,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   ];
 
   const gpaValue = athleteDetail?.basicInfo?.gpa || athleteDetail?.athlete?.gpa;
-  const keyInfluenceValue = athleteDetail?.family?.keyInfluences || "N/A";
+  // const keyInfluenceValue = athleteDetail?.family?.keyInfluences || "N/A";
   const coachEvaluationValue = athleteDetail?.athlete?.coachEvaluation || "N/A";
 
   // Pre-calculate column heights so we advance Y past the TALLER column
@@ -581,10 +581,10 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   drawExpandingTable(M, currentY, LEFT_W, "Family Background", familyRows, 110);
 
   const afterGPA = drawGPABar(BRIGHT_X, currentY, BRIGHT_W, gpaValue) + 10;
-  const afterCGPA =
-    drawKeyInfluence(BRIGHT_X, afterGPA, BRIGHT_W, keyInfluenceValue) + 10;
+  // const afterCGPA =
+  //   drawKeyInfluence(BRIGHT_X, afterGPA, BRIGHT_W, keyInfluenceValue) + 10;
   const afterCoach =
-    drawCoachEvaluation(BRIGHT_X, afterCGPA, BRIGHT_W, coachEvaluationValue) +
+    drawCoachEvaluation(BRIGHT_X, afterGPA, BRIGHT_W, coachEvaluationValue) +
     10;
 
   drawExpandingTable(
