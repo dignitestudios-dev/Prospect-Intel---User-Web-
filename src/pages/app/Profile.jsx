@@ -995,9 +995,7 @@ const Profile = () => {
             </h3>
 
             {athleteDetail?.athlete?.footballPiScore === "N/A" ? (
-              <p className="text-center text-sm opacity-90 leading-relaxed">
-                N/A
-              </p>
+              <p className="text-center text-sm opacity-90 leading-relaxed"></p>
             ) : (
               <p className="text-center text-sm opacity-90 leading-relaxed">
                 {gradeDescriptions[
@@ -1026,9 +1024,7 @@ const Profile = () => {
               Personal Character
             </h3>
             {athleteDetail?.athlete?.personalPiScore === "N/A" ? (
-              <p className="text-center text-sm leading-relaxed opacity-90">
-                N/A
-              </p>
+              <p className="text-center text-sm leading-relaxed opacity-90"></p>
             ) : (
               <p className="text-center text-sm leading-relaxed opacity-90">
                 {gradeDescriptions[

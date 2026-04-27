@@ -800,7 +800,9 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   // ── Grade helpers ────────────────────────────────────────────
   const normalizeGrade = (score) => {
     if (!score) return null;
-    return String(score).trim().toUpperCase().charAt(0);
+    return score !== "N/A"
+      ? String(score).trim().toUpperCase().charAt(0)
+      : "N/A";
   };
 
   const gradeDescriptions = {
@@ -972,7 +974,10 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...textClr);
-    const descLines = doc.splitTextToSize(desc, w - C_PAD * 2);
+    const descLines = doc.splitTextToSize(
+      score !== "N/A" ? desc : "",
+      w - C_PAD * 2,
+    );
     doc.text(descLines, x + w / 2, y + C_PAD + BADGE_SZ + 32, {
       align: "center",
     });
