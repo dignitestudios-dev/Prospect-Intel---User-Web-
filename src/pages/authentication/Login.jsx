@@ -24,7 +24,7 @@ const Login = () => {
 
   const getUserLocation = async () => {
     try {
-      const res = await fetch("https://ipinfo.io/json"); 
+      const res = await fetch("https://ipinfo.io/json");
       const data = await res.json();
       return {
         city: data.city || "",
@@ -34,7 +34,6 @@ const Login = () => {
       return { city: "", state: "" };
     }
   };
-
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
@@ -62,7 +61,7 @@ const Login = () => {
               login({
                 token: data?.token,
                 user: data?.user,
-              })
+              }),
             );
 
             dispatch(
@@ -70,7 +69,7 @@ const Login = () => {
                 title: "User Logged In",
                 description: "User Logged In",
                 metaData: { type: "Logged In", city, state },
-              })
+              }),
             );
 
             SuccessToast(response.data?.message || "Login Successful");
@@ -78,7 +77,7 @@ const Login = () => {
           }
         } catch (error) {
           ErrorToast(
-            error?.response?.data?.message || "Login failed. Try again."
+            error?.response?.data?.message || "Login failed. Try again.",
           );
         } finally {
           setLoading(false);
@@ -97,7 +96,7 @@ const Login = () => {
           <div className="w-full rounded-xl">
             <h2 className="text-2xl font-bold text-center mb-6">Log In</h2>
 
-            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            <form className="flex flex-col gap-4 mx-2" onSubmit={handleSubmit}>
               <div>
                 <input
                   type="text"

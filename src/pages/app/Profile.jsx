@@ -23,12 +23,18 @@ import { useParams } from "react-router";
 import { mockAtheleTableData } from "../../static/mockData";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAtheleteById } from "../../lib/query/queryFn";
-import { formatAthleteForCSV, formatDate } from "../../lib/helpers";
+import {
+  formatAthleteForCSV,
+  formatDate,
+  formatPhoneNumber,
+  generateAthletePDF,
+} from "../../lib/helpers";
 import axiosinstance from "../../axios";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import { ProfileSkeleton } from "../../components/global/Skeleton";
 import { useAppDispatch } from "../../lib/store/hook";
 import { logActivity } from "../../lib/store/actions/activityActions";
+import jsPDF from "jspdf";
 
 // --- END DUMMY DATA ---
 
@@ -43,26 +49,20 @@ const ProfileStat = ({ label, value, title }) => (
 );
 
 // Helper component for the Info Boxes on the right side
-const InfoBox = ({
-  title,
-  score,
-  icon,
-  children,
-}) => {
-
+const InfoBox = ({ title, score, icon, children }) => {
   // ✅ get first letter only (A+, A- → A)
   const grade = score?.charAt(0)?.toUpperCase();
 
   // ✅ color mapping
   const bgColor =
     grade === "A"
-      ? "bg-[#131212]"
+      ? "bg-[#0B3D2E]"
       : grade === "B"
         ? "bg-[#1DB863]"
         : grade === "C"
-          ? "bg-[#909090]"
+          ? "bg-[#F4D35E]"
           : grade === "D"
-            ? "bg-[#F9C933]"
+            ? "bg-[#FFB805]"
             : grade === "F"
               ? "bg-[#FF3A3A]"
               : "bg-gray-400";
@@ -76,13 +76,13 @@ const InfoBox = ({
         </h3>
 
         {score && (
-          <div className={`flex items-center border border-gray-300 rounded-lg p-2 ${bgColor}`}>
+          <div
+            className={`flex items-center border border-gray-300 rounded-lg p-2 ${bgColor}`}
+          >
             <span className="text-xs font-semibold text-white mr-2">
               PI Score
             </span>
-            <span className="text-xl font-bold text-white">
-              {score}
-            </span>
+            <span className="text-xl font-bold text-white">{score}</span>
           </div>
         )}
       </div>
@@ -98,8 +98,9 @@ const InfoRow = ({ label, value, isBold = false }) => (
   <div className="flex justify-between py-1">
     <span className="text-gray-600 text-sm">{label}:</span>
     <span
-      className={`text-gray-900 text-sm ${isBold ? "font-semibold" : "font-normal"
-        }`}
+      className={`text-gray-900 text-sm ${
+        isBold ? "font-semibold" : "font-normal"
+      }`}
     >
       {value}
     </span>
@@ -107,9 +108,6 @@ const InfoRow = ({ label, value, isBold = false }) => (
 );
 const AthleticBox = ({ title, icon, children }) => (
   <div className="bg-white bg-opacity-25  pt-4  border-2 border-white rounded-2xl p-5">
-
-
-
     <div className="bg-white bg-opacity-25 p-4 pt-4 rounded-xl border-2 border-white  shadow-sm">
       <div className="flex items-center mb-4">
         <div className="flex items-center text-lg font-semibold text-gray-900">
@@ -124,11 +122,15 @@ const AthleticBox = ({ title, icon, children }) => (
 
 const Profile = () => {
   const { id } = useParams();
-  const dispatch = useAppDispatch()
-  const queryClient = useQueryClient()
-  const [saveLoading, setSaveLoading] = useState(false)
+  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+  const [saveLoading, setSaveLoading] = useState(false);
 
-  const { data: athleteDetail, isLoading, refetch } = useQuery({
+  const {
+    data: athleteDetail,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["atheleteid", id],
     queryFn: () => getAtheleteById(id),
     enabled: !!id,
@@ -136,15 +138,14 @@ const Profile = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-
   const getGradeColor = (score) => {
     const grade = score?.charAt(0)?.toUpperCase();
 
     const colorMap = {
-      A: "bg-[#0F0F0F]",
+      A: "bg-[#0B3D2E]",
       B: "bg-[#1DB863]",
-      C: "bg-[#909090]",
-      D: "bg-[#F9C933] text-black",
+      C: "bg-[#F4D35E]",
+      D: "bg-[#FFB805] text-black",
       F: "bg-[#FF3A3A]",
     };
 
@@ -194,7 +195,7 @@ const Profile = () => {
     weaknesses: [],
   };
   const athlete =
-    mockAtheleTableData.find(a => a.id === Number(id)) || defaultAthlete;
+    mockAtheleTableData.find((a) => a.id === Number(id)) || defaultAthlete;
 
   const playerProfileData = {
     name: athlete?.name,
@@ -252,7 +253,7 @@ const Profile = () => {
   const p = playerProfileData;
 
   // State to control Pop-up/Modal visibility
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
   const [showSendMessageModal, setShowSendMessageModal] = useState(false);
@@ -291,35 +292,38 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
-    setSaveLoading(true)
+    setSaveLoading(true);
     try {
-      const response = await axiosinstance.post('/user/athlete/save', { athleteId: id })
+      const response = await axiosinstance.post("/user/athlete/save", {
+        athleteId: id,
+      });
       if (response?.status === 200) {
-        SuccessToast(`${athleteDetail?.isSaved ? "Profile UnSaved" : "Profile Saved"}`)
+        SuccessToast(
+          `${athleteDetail?.isSaved ? "Profile UnSaved" : "Profile Saved"}`,
+        );
         setShowSaveSuccess(true);
         queryClient.invalidateQueries({
-          queryKey: ["atheletesave"]
-        })
-        refetch()
+          queryKey: ["atheletesave"],
+        });
+        refetch();
       }
     } catch (err) {
-      ErrorToast(err?.response?.data?.messsage)
+      ErrorToast(err?.response?.data?.messsage);
     } finally {
-      setSaveLoading(false)
+      setSaveLoading(false);
     }
-  }
+  };
   const handleRequestUpdate = async () => {
-    setRequestLoading(true)
+    setRequestLoading(true);
     try {
-      const response = await axiosinstance.post('/user/athlete/request', {
+      const response = await axiosinstance.post("/user/athlete/request", {
         athleteId: id,
-        description: message
-
-      })
+        description: message,
+      });
       if (response?.status === 200) {
-        SuccessToast(response?.data?.message)
-        setMessage('')
-        setShowSendMessageModal(false)
+        SuccessToast(response?.data?.message);
+        setMessage("");
+        setShowSendMessageModal(false);
         dispatch(
           logActivity({
             title: "Requested Player Info",
@@ -328,47 +332,241 @@ const Profile = () => {
               type: "RequestedPlayer",
               athleteImg: athleteDetail?.basicInfo?.image,
               athleteName: athleteDetail?.basicInfo?.name,
-            }
-          })
+            },
+          }),
         );
-
       }
     } catch (err) {
-      ErrorToast(err?.response?.data?.message)
+      ErrorToast(err?.response?.data?.message);
     } finally {
-      setRequestLoading(false)
+      setRequestLoading(false);
     }
-  }
-
+  };
 
   const footballScore = athleteDetail?.athlete?.footballPiScore || "";
   const personalScore = athleteDetail?.athlete?.personalPiScore || "";
 
+  // const handleDownloadCSV = () => {
+  //   if (!athlete) return;
 
-  const handleDownloadCSV = () => {
-    if (!athlete) return;
+  //   const data = formatAthleteForCSV(athleteDetail);
 
-    const data = formatAthleteForCSV(athleteDetail);
+  //   const headers = Object.keys(data);
+  //   const values = Object.values(data);
 
-    const headers = Object.keys(data);
-    const values = Object.values(data);
+  //   const csv = [
+  //     headers.join(","),
+  //     values.map((v) => `"${v ?? ""}"`).join(","),
+  //   ].join("\n");
 
-    const csv = [
-      headers.join(","),
-      values.map(v => `"${v ?? ""}"`).join(",")
-    ].join("\n");
+  //   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  //   const url = window.URL.createObjectURL(blob);
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = window.URL.createObjectURL(blob);
+  //   const a = document.createElement("a");
+  //   a.href = url;
+  //   a.download = `${athleteDetail?.basicInfo?.name}.csv`;
+  //   a.click();
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${athleteDetail?.basicInfo?.name}.csv`;
-    a.click();
+  //   window.URL.revokeObjectURL(url);
+  // };
 
-    window.URL.revokeObjectURL(url);
-  };
+  // const handleDownloadPDF = () => {
+  //   if (!athleteDetail) return;
 
+  //   const doc = new jsPDF();
+  //   const pageWidth = doc.internal.pageSize.getWidth();
+  //   const pageHeight = doc.internal.pageSize.getHeight();
+  //   const margin = 15;
+  //   let yPosition = margin;
+  //   const lineHeight = 7;
+
+  //   // Helper function to add text with wrapping
+  //   const addWrappedText = (text, x, y, maxWidth, fontSize = 10) => {
+  //     doc.setFontSize(fontSize);
+  //     const lines = doc.splitTextToSize(String(text || "N/A"), maxWidth);
+  //     doc.text(lines, x, y);
+  //     return y + lines.length * lineHeight;
+  //   };
+
+  //   // Helper function to add section
+  //   const addSection = (title, content = []) => {
+  //     doc.setFontSize(12);
+  //     doc.setFont(undefined, "bold");
+  //     yPosition += 5;
+  //     doc.text(title, margin, yPosition);
+  //     yPosition += 8;
+  //     doc.setFont(undefined, "normal");
+  //     doc.setFontSize(10);
+
+  //     content.forEach((item) => {
+  //       if (yPosition > pageHeight - margin) {
+  //         doc.addPage();
+  //         yPosition = margin;
+  //       }
+  //       yPosition = addWrappedText(
+  //         `${item.label}: ${item.value}`,
+  //         margin,
+  //         yPosition,
+  //         pageWidth - 2 * margin,
+  //         10,
+  //       );
+  //       yPosition += 2;
+  //     });
+  //   };
+
+  //   // ===== HEADER =====
+  //   doc.setFontSize(16);
+  //   doc.setFont(undefined, "bold");
+  //   doc.text(
+  //     `${athleteDetail?.basicInfo?.name || "Athlete Profile"}`,
+  //     margin,
+  //     yPosition,
+  //   );
+  //   yPosition += 10;
+
+  //   // Profile Summary
+  //   doc.setFontSize(10);
+  //   doc.setFont(undefined, "normal");
+  //   const profileSummary = [
+  //     { label: "ID", value: athleteDetail?._id },
+  //     { label: "Position", value: athleteDetail?.basicInfo?.position },
+  //     { label: "Graduation Year", value: athleteDetail?.basicInfo?.gradYear },
+  //     { label: "Height", value: athleteDetail?.basicInfo?.height },
+  //     { label: "Weight", value: athleteDetail?.basicInfo?.weight },
+  //     { label: "Status", value: athleteDetail?.basicInfo?.status },
+  //   ];
+  //   addSection("Basic Information", profileSummary);
+
+  //   // ===== CONTACT INFO =====
+  //   const contactInfo = [
+  //     { label: "Email", value: athleteDetail?.basicInfo?.email || "N/A" },
+  //     { label: "Phone", value: athleteDetail?.basicInfo?.phone || "N/A" },
+  //     {
+  //       label: "Hometown",
+  //       value: athleteDetail?.basicInfo?.hometown || "N/A",
+  //     },
+  //     {
+  //       label: "Date of Birth",
+  //       value: formatDate(athleteDetail?.basicInfo?.dob) || "N/A",
+  //     },
+  //     {
+  //       label: "High School",
+  //       value: athleteDetail?.basicInfo?.schoolName || "N/A",
+  //     },
+  //     { label: "State", value: athleteDetail?.basicInfo?.state || "N/A" },
+  //     {
+  //       label: "Committed College",
+  //       value: athleteDetail?.basicInfo?.committedCollege?.name || "N/A",
+  //     },
+  //   ];
+  //   addSection("Contact & School Information", contactInfo);
+
+  //   // ===== FAMILY INFORMATION =====
+  //   const familyInfo = [
+  //     { label: "Mother Name", value: athleteDetail?.family?.motherName },
+  //     {
+  //       label: "Mother Occupation",
+  //       value: athleteDetail?.family?.motherOccupation,
+  //     },
+  //     {
+  //       label: "Mother DOB",
+  //       value: formatDate(athleteDetail?.family?.motherDob) || "N/A",
+  //     },
+  //     { label: "Mother Contact", value: athleteDetail?.family?.motherContact },
+  //     { label: "Father Name", value: athleteDetail?.family?.fatherName },
+  //     {
+  //       label: "Father Occupation",
+  //       value: athleteDetail?.family?.fatherOccupation,
+  //     },
+  //     {
+  //       label: "Father DOB",
+  //       value: formatDate(athleteDetail?.family?.fatherDob) || "N/A",
+  //     },
+  //     { label: "Father Contact", value: athleteDetail?.family?.fatherContact },
+  //     {
+  //       label: "Key Influences",
+  //       value: athleteDetail?.family?.keyInfluences || "N/A",
+  //     },
+  //   ];
+  //   addSection("Family Information", familyInfo);
+
+  //   // ===== ATHLETIC INFORMATION =====
+  //   const athleticInfo = [
+  //     {
+  //       label: "Other Sports",
+  //       value: athleteDetail?.athlete?.otherSports || "N/A",
+  //     },
+  //     {
+  //       label: "Activities",
+  //       value: athleteDetail?.athlete?.activities || "N/A",
+  //     },
+  //     {
+  //       label: "Coach Evaluation",
+  //       value: athleteDetail?.athlete?.coachEvaluation || "N/A",
+  //     },
+  //   ];
+  //   addSection("Athletic Background", athleticInfo);
+
+  //   // ===== CHARACTER SCORES =====
+  //   const characterInfo = [
+  //     {
+  //       label: "Football PI Score",
+  //       value: athleteDetail?.athlete?.footballPiScore || "N/A",
+  //     },
+  //     {
+  //       label: "Football Description",
+  //       value: athleteDetail?.athlete?.footballDescription || "N/A",
+  //     },
+  //     {
+  //       label: "Personal PI Score",
+  //       value: athleteDetail?.athlete?.personalPiScore || "N/A",
+  //     },
+  //     {
+  //       label: "Personal Description",
+  //       value: athleteDetail?.athlete?.personalDescription || "N/A",
+  //     },
+  //   ];
+  //   addSection("Character Assessment", characterInfo);
+
+  //   // ===== STRENGTHS & WEAKNESSES =====
+  //   const overviewInfo = [
+  //     {
+  //       label: "Strengths",
+  //       value: athleteDetail?.overview?.strengths?.join(", ") || "N/A",
+  //     },
+  //     {
+  //       label: "Weaknesses",
+  //       value: athleteDetail?.overview?.weaknesses?.join(", ") || "N/A",
+  //     },
+  //   ];
+  //   addSection("Overview", overviewInfo);
+
+  //   // ===== ADDITIONAL INFO =====
+  //   const additionalInfo = [
+  //     {
+  //       label: "Other Information",
+  //       value: athleteDetail?.athlete?.otherInfo || "N/A",
+  //     },
+  //   ];
+  //   addSection("Additional Information", additionalInfo);
+
+  //   // ===== FOOTER =====
+  //   if (yPosition > pageHeight - margin) {
+  //     doc.addPage();
+  //   }
+  //   doc.setFontSize(9);
+  //   doc.setFont(undefined, "italic");
+  //   doc.text(
+  //     `Generated on ${new Date().toLocaleDateString()}`,
+  //     margin,
+  //     pageHeight - 10,
+  //   );
+
+  //   // Download PDF
+  //   doc.save(`${athleteDetail?.basicInfo?.name || "Athlete_Profile"}.pdf`);
+  // };
+
+  const handleDownloadPDF = () => generateAthletePDF(athleteDetail, formatDate);
 
   const normalizeGrade = (grade) => {
     if (!grade) return null;
@@ -383,16 +581,14 @@ const Profile = () => {
 
     D: "Has a character deficiency. He may display negative character in flashes. May not be fatal character but will likely limit his ability to perform and develop.",
 
-    F: "Fatal characteristics. Will likely fail at the next level and likely to be a distraction to his teammates and coaches."
+    F: "Fatal characteristics. Will likely fail at the next level and likely to be a distraction to his teammates and coaches.",
   };
 
   if (isLoading) {
     return <ProfileSkeleton />;
   }
   return (
-
     <div className="w-full min-h-screen bg-[#EAEEF8] font-sans p-4">
-
       {showSaveSuccess && (
         <SaveSuccessPopup onClose={() => setShowSaveSuccess(false)} />
       )}
@@ -407,57 +603,80 @@ const Profile = () => {
           setMessage={setMessage}
           loading={requestLoading}
         />
-
       )}
 
-
       <div className="mx-auto bg-[#EAEEF8] overflow-hidden">
-
-        <div className="border-gray-200 p-8 flex items-start">
-
+        <div className="border-gray-200 p-4 md:p-8 flex flex-col md:flex-row items-start">
           <img
             src={athleteDetail?.basicInfo?.image || Emptyimg}
             alt={athleteDetail?.basicInfo?.name}
-            className="w-[100px] h-[100px] rounded-full shadow-xl mr-6"
+            className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-full shadow-xl mb-4 md:mb-0 md:mr-6"
           />
 
-
-          <div className="flex-1 flex justify-between">
-
-            <div className="flex flex-col">
-
-              <h1 className="text-3xl font-extrabold text-gray-900 break-all">
+          <div className="flex-1 flex flex-col md:flex-row md:justify-between w-full">
+            <div className="flex flex-col mb-4 md:mb-0">
+              <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 break-words">
                 {athleteDetail?.basicInfo?.name}
               </h1>
 
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:flex md:flex-wrap gap-3 md:gap-8 mt-3">
+                <ProfileStat
+                  label="Grad"
+                  value={athleteDetail?.basicInfo?.gradYear}
+                />
+                <ProfileStat
+                  label="Position"
+                  value={athleteDetail?.basicInfo?.position}
+                />
+                <ProfileStat
+                  label="School"
+                  title={athleteDetail?.basicInfo?.schoolName}
+                  value={athleteDetail?.basicInfo?.schoolName}
+                />
+                <ProfileStat
+                  label="State"
+                  value={athleteDetail?.basicInfo?.state}
+                />
+                <ProfileStat
+                  label="Height"
+                  value={`${athleteDetail?.basicInfo?.height}`}
+                />
+                <ProfileStat
+                  label="Weight"
+                  value={`${athleteDetail?.basicInfo?.weight} lbs`}
+                />
+                <ProfileStat
+                  label="GPA"
+                  value={athleteDetail?.basicInfo?.gpa}
+                />
 
-              <div className="flex gap-8 mt-3 flex-wrap">
-                <ProfileStat label="Grad" value={athleteDetail?.basicInfo?.gradYear} />
-                <ProfileStat label="Position" value={athleteDetail?.basicInfo?.position} />
-                <ProfileStat label="School" title={athleteDetail?.basicInfo?.schoolName} value={athleteDetail?.basicInfo?.schoolName} />
-                <ProfileStat label="State" value={athleteDetail?.basicInfo?.state} />
-
-                <ProfileStat label="Height" value={` ${athleteDetail?.basicInfo?.height} Feet`} />
-                <ProfileStat label="Weight" value={` ${athleteDetail?.basicInfo?.weight} lbs`} />
-                <ProfileStat label="GPA" value={athleteDetail?.basicInfo?.gpa} />
-                {/* <ProfileStat label="Commitment" value={athleteDetail?.basicInfo?.committedCollege?.name} /> */}
+                {/* Commitment */}
                 <div className="flex flex-col items-center">
-                  <span className="text-gray-500 text-[28px] font-semibold">Commitment</span>
+                  <span className="text-gray-500 text-[14px] md:text-[28px] font-semibold">
+                    Committed
+                  </span>
                   <div className="flex gap-2 items-center">
-
-                    <img src={athleteDetail?.basicInfo?.committedCollege?.logo || Emptyimg} alt="College Logo" className="w-[20px] h-[20px] object-contain" />
-                    <span className="text-gray-900 text-[14px] font-bold">{athleteDetail?.basicInfo?.committedCollege?.name}</span>
+                    <img
+                      src={
+                        athleteDetail?.basicInfo?.committedCollege?.logo ||
+                        Emptyimg
+                      }
+                      alt="College Logo"
+                      className="w-[20px] h-[20px] object-contain"
+                    />
+                    <span className="text-gray-900 text-[11px] md:text-[14px] font-bold">
+                      {athleteDetail?.basicInfo?.committedCollege?.name}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-
-            <div className="flex flex-col items-end space-y-3 ml-6">
-
-              <div className="flex space-x-3">
+            {/* Buttons */}
+            <div className="flex flex-col items-start md:items-end space-y-3 md:ml-6 w-full md:w-auto">
+              <div className="flex flex-row space-x-2 sm:space-x-3 w-full md:flex-row">
                 <button
-                  className="px-6 py-3 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                  className="px-4 md:px-6 py-3 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50 flex-1 sm:flex-none sm:w-auto"
                   onClick={handleSave}
                   disabled={saveLoading}
                 >
@@ -468,22 +687,23 @@ const Profile = () => {
                       : "Save Profile"}
                 </button>
                 <button
-                  className="px-4 py-3 bg-[#0085CA] text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                  className="px-4 py-3 bg-[#0085CA] text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex-1 sm:flex-none sm:w-auto"
                   onClick={handleRequestUpdates}
                 >
                   Request Updates
                 </button>
               </div>
 
-
-              <button onClick={handleDownloadCSV} className="flex items-center px-6 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 w-[270px] h-[50px] justify-center">
-
-                Download CSV
+              <button
+                onClick={handleDownloadPDF}
+                className="flex items-center px-4 md:px-6 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 w-full md:w-[270px] h-[50px] justify-center"
+              >
+                Download PDF
               </button>
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 mx-10">
+        <div className="flex flex-wrap gap-2 mx-4 md:mx-10">
           {athleteDetail?.basicInfo?.status?.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-1">
               {athleteDetail?.basicInfo?.status?.map((tag, idx) => {
@@ -501,7 +721,7 @@ const Profile = () => {
                     className="py-1 px-2 text-[10px] rounded-full font-semibold"
                     style={{
                       border: `1px solid ${color.bg}`,
-                      color: 'black',
+                      color: "black",
                     }}
                   >
                     {tag.toUpperCase()}
@@ -518,8 +738,6 @@ const Profile = () => {
       </div>
 
       <div>
-
-
         <div className="flex space-x-2  p-4">
           {p?.statusTags?.map((tag, index) => {
             const styleMap = {
@@ -536,7 +754,6 @@ const Profile = () => {
                 key={index}
                 className={`flex items-center px-3 py-3 text-xs font-semibold rounded-full border text-black ${border}`}
               >
-
                 <span className={`w-2 h-2 rounded-full mr-2 ${dot}`} />
                 {tag}
               </span>
@@ -544,11 +761,8 @@ const Profile = () => {
           })}
         </div>
 
-
-        <div className="flex divide-x divide-gray-100">
-
-          <div className="w-[35%] bg-white bg-opacity-25 p-4 pt-4 rounded-xl border-2 border-white">
-
+        <div className="flex flex-col xl:flex-row divide-y xl:divide-y-0 xl:divide-x divide-gray-100">
+          <div className="w-full xl:w-[35%] bg-white bg-opacity-25 p-4 pt-4 rounded-xl border-2 border-white xl:mr-0">
             <div className="space-y-4">
               <div className="bg-white bg-opacity-25 p-4 pt-4 rounded-xl border-2 border-white mb-4">
                 <h2 className="flex items-center text-lg font-bold text-red-500">
@@ -565,13 +779,18 @@ const Profile = () => {
                     </h4>
                     <InfoRow label="Name" value={parent.name} isBold={true} />
                     <InfoRow label="Occupation" value={parent.occupation} />
-                    <InfoRow label="Contact" value={`${parent.contact ? `+1 ${parent.contact}` : "N/A"}`} />
-                    <InfoRow label="DOB" value={parent.dob} />
+                    <InfoRow
+                      label="Contact"
+                      value={formatPhoneNumber(parent.contact)}
+                    />
+                    <InfoRow
+                      label="DOB"
+                      value={formatDate(parent.dob) || "N/A"}
+                    />
                   </div>
                 ))}
               </div>
             </div>
-
 
             <div className="space-y-4">
               <div className="bg-white bg-opacity-25 p-4 pt-4 rounded-xl border-2 border-white mb-4">
@@ -591,21 +810,19 @@ const Profile = () => {
                       <span className="font-medium text-gray-800 text-sm">
                         {sibling?.name}
                       </span>
-
                     </div>
                     <div className="flex justify-between my-4">
                       <span className="font-medium text-gray-800 text-sm">
                         DOB
                       </span>
-                      <span className="text-gray-600 text-sm">{formatDate(sibling?.dob)}</span>
-
+                      <span className="text-gray-600 text-sm">
+                        {formatDate(sibling?.dob) || "N/A"}
+                      </span>
                     </div>
-
                   </div>
                 ))}
               </div>
             </div>
-
 
             <div className="space-y-4">
               <div className="bg-white bg-opacity-25 p-4 pt-4 rounded-xl border-2 border-white">
@@ -613,41 +830,31 @@ const Profile = () => {
                   <img src={features} alt="Features" className="mr-2 text-xl" />
                   Key Influences
                 </h2>
-                <p className="text-gray-700 text-sm italic mt-4">
+                <p className="text-gray-700 text-sm mt-4">
                   {athleteDetail?.family?.keyInfluences}
                 </p>
               </div>
             </div>
           </div>
 
-
-          <div className="w-[65%] p-8 pt-0 space-y-8 ">
-
+          <div className="w-full xl:w-[65%] p-4 xl:p-8 pt-0 space-y-8 xl:pl-8">
             <AthleticBox
               title="Athletic Background"
               icon={<img src={athletic} alt="icon" className="w-5 h-5" />}
             >
-              <div className="grid grid-cols-2 gap-10">
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
                 <div className="space-y-4">
-
                   <div>
                     <div className="flex  justify-between text-gray-700 font-medium mb-1">
                       <span className="mr-2">🏅 Other Sports</span>
 
                       <div className="flex space-x-2">
-
-                        <span
-
-                          className="px-3 py-1 border-2 border-blue-400 text-black rounded-md text-xs font-medium bg-transparent"
-                        >
+                        <span className="px-3 py-1 border-2 border-blue-400 text-black rounded-md text-xs font-medium bg-transparent">
                           {athleteDetail?.athlete?.otherSports}
                         </span>
-
                       </div>
                     </div>
                   </div>
-
 
                   <div>
                     <div className="flex items-center text-gray-700 font-medium mb-1">
@@ -660,19 +867,17 @@ const Profile = () => {
                   </div>
                 </div>
 
-
                 <div className="bg-white bg-opacity-25 p-4 pt-4 rounded-xl border-2 border-white  shadow-sm">
                   <div className="flex items-center text-gray-700 font-medium mb-2">
                     <span className="mr-2">⚡</span> Coach Evaluation
                   </div>
 
-                  <p className="text-gray-600 text-sm leading-relaxed italic">
+                  <p className="text-gray-600 text-sm leading-relaxed ">
                     {athleteDetail?.athlete?.coachEvaluation || "N/A"}
                   </p>
                 </div>
               </div>
             </AthleticBox>
-
 
             <InfoBox
               title="Football Character"
@@ -708,7 +913,7 @@ const Profile = () => {
               title="Other Relevant Information"
               icon={<img src={other} alt="Other" className="text-[#7A4D8B]" />}
             >
-              <p className="text-gray-700 text-sm italic ">
+              <p className="text-gray-700 text-sm ">
                 {athleteDetail?.athlete?.otherInfo || "N/A"}
               </p>
             </InfoBox>
@@ -721,15 +926,15 @@ const Profile = () => {
           Overview
         </h2>
 
-        <div className="bbg-white bg-opacity-25 p-4 pt-4 rounded-xl border-2 border-white grid grid-cols-2 gap-10">
-
+        <div className="bbg-white bg-opacity-25 p-4 pt-4 rounded-xl border-2 border-white grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
           <div className="bg-white bg-opacity-25  rounded-xl border-2 border-white  p-8">
             <h2 className="text-center text-2xl font-extrabold text-gray-900 mb-6">
               STRENGTH
             </h2>
 
             <ul className="space-y-4">
-              {athleteDetail?.overview?.strengths && athleteDetail?.overview?.strengths.length > 0 ? (
+              {athleteDetail?.overview?.strengths &&
+              athleteDetail?.overview?.strengths.length > 0 ? (
                 athleteDetail?.overview?.strengths.map((item, i) => (
                   <li key={i} className="flex items-start text-gray-700 ">
                     <span className="text-blue-600 h-8 mr-3">✦</span>
@@ -737,11 +942,10 @@ const Profile = () => {
                   </li>
                 ))
               ) : (
-                <li className="text-gray-500">No strengths listed.</li>
+                <li className="text-gray-500">Data Not found.</li>
               )}
             </ul>
           </div>
-
 
           <div className="bg-white bg-opacity-25  rounded-xl border-2 border-white  p-8">
             <h2 className="text-center text-2xl font-extrabold text-gray-900 mb-6">
@@ -749,7 +953,8 @@ const Profile = () => {
             </h2>
 
             <ul className="space-y-4">
-              {athleteDetail?.overview?.weaknesses && athleteDetail?.overview?.weaknesses.length > 0 ? (
+              {athleteDetail?.overview?.weaknesses &&
+              athleteDetail?.overview?.weaknesses.length > 0 ? (
                 athleteDetail?.overview?.weaknesses.map((item, i) => (
                   <li key={i} className="flex items-start text-gray-700">
                     <span className="text-red-500 mr-3">✚</span>
@@ -757,7 +962,7 @@ const Profile = () => {
                   </li>
                 ))
               ) : (
-                <li className="text-gray-500">No weaknesses listed.</li>
+                <li className="text-gray-500">Data Not found.</li>
               )}
             </ul>
           </div>
@@ -769,10 +974,10 @@ const Profile = () => {
           Grading Scale
         </h2>
 
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-          <div className={` ${getGradeColor(footballScore)} text-white p-10 rounded-xl shadow-lg`}>
+          <div
+            className={` ${getGradeColor(footballScore)} text-white p-10 rounded-xl shadow-lg`}
+          >
             <div className="flex items-center justify-center mb-4">
               <div
                 className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(footballScore)}`}
@@ -789,13 +994,20 @@ const Profile = () => {
               Football Character
             </h3>
 
-            <p className="text-center text-sm opacity-90 leading-relaxed">
-              {gradeDescriptions[normalizeGrade(athleteDetail?.athlete?.footballPiScore)] || athleteDetail?.athlete?.footballDescription}
-            </p>
+            {athleteDetail?.athlete?.footballPiScore === "N/A" ? (
+              <p className="text-center text-sm opacity-90 leading-relaxed"></p>
+            ) : (
+              <p className="text-center text-sm opacity-90 leading-relaxed">
+                {gradeDescriptions[
+                  normalizeGrade(athleteDetail?.athlete?.footballPiScore)
+                ] || athleteDetail?.athlete?.footballDescription}
+              </p>
+            )}
           </div>
 
-
-          <div className={` ${getGradeColor(personalScore)} text-white p-10 rounded-xl shadow-lg`}>
+          <div
+            className={` ${getGradeColor(personalScore)} text-white p-10 rounded-xl shadow-lg`}
+          >
             <div className="flex items-center justify-center mb-4">
               <div
                 className={`w-12 h-12 flex items-center justify-center rounded-lg text-white text-2xl font-bold p-4 border-2 border-white ${getGradeColor(personalScore)}`}
@@ -811,26 +1023,31 @@ const Profile = () => {
             <h3 className="text-center text-3xl font-bold mb-4">
               Personal Character
             </h3>
-
-            <p className="text-center text-sm leading-relaxed opacity-90">
-              {gradeDescriptions[normalizeGrade(athleteDetail?.athlete?.personalPiScore)] || athleteDetail?.athlete?.personalDescription}
-            </p>
+            {athleteDetail?.athlete?.personalPiScore === "N/A" ? (
+              <p className="text-center text-sm leading-relaxed opacity-90"></p>
+            ) : (
+              <p className="text-center text-sm leading-relaxed opacity-90">
+                {gradeDescriptions[
+                  normalizeGrade(athleteDetail?.athlete?.personalPiScore)
+                ] || athleteDetail?.athlete?.personalDescription}
+              </p>
+            )}
           </div>
         </div>
 
-
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-
-          <div className="bg-black text-white rounded-xl p-6 flex flex-col items-center justify-center">
+          <div className="bg-[#0B3D2E] text-white rounded-xl p-6 flex flex-col items-center justify-center">
             <div className="w-12 h-12 flex items-center justify-center  border-white/40 rounded-lg  text-white text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
               A
             </div>
             <p className="mt-2 font-semibold text-lg">Elite</p>
             <p className="text-white text-[16px] text-center flex-1">
-              Elite. Has outstanding character with no clear character flaws. Will clearly stand out amount his teammates. Strong positive influence. He will likely overcome potential defeciencies due to this outstanding component.
+              Elite. Has outstanding character with no clear character flaws.
+              Will clearly stand out amount his teammates. Strong positive
+              influence. He will likely overcome potential defeciencies due to
+              this outstanding component.
             </p>
           </div>
-
 
           <div className="bg-[#1DB863] text-white rounded-xl p-6 flex flex-col items-center justify-center">
             <div className="w-12 h-12 flex items-center justify-center  border-white/40 rounded-lg  text-white text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
@@ -838,32 +1055,39 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Good</p>
             <p className="text-white text-[16px] text-center flex-1">
-              Good. Displays solid overall character characteristics. Teammates and coaches will notice his positive traits during normal interactions with this player. Could overcome potential defeciencies in some areas.
+              Good. Displays solid overall character characteristics. Teammates
+              and coaches will notice his positive traits during normal
+              interactions with this player. Could overcome potential
+              defeciencies in some areas.
             </p>
           </div>
 
-
-          <div className="bg-[#B5B5B5] text-white rounded-xl p-6 flex flex-col items-center justify-center">
+          <div className="bg-[#F4D35E] text-white rounded-xl p-6 flex flex-col items-center justify-center">
             <div className="w-12 h-12 flex items-center justify-center  border-white/40 rounded-lg  text-white text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
               C
             </div>
             <p className="mt-2 font-semibold text-lg">Adequate/Blend In</p>
             <p className="text-white text-[16px] text-center flex-1 ">
-              Adequate/Blend In. Not necessarily a negative, but unlikely to be a positive. Average in all characteristics for the most part. This prospect possesses characteristics to survive and get by.  He will not add or subtract to the culture. This will be the bulk of prospects.
+              Adequate/Blend In. Not necessarily a negative, but unlikely to be
+              a positive. Average in all characteristics for the most part. This
+              prospect possesses characteristics to survive and get by. He will
+              not add or subtract to the culture. This will be the bulk of
+              prospects.
             </p>
           </div>
 
-
-          <div className="bg-[#F9C933] text-black rounded-xl p-6 flex flex-col items-center justify-center">
+          <div className="bg-[#FFB805] text-black rounded-xl p-6 flex flex-col items-center justify-center">
             <div className="w-12 h-12 flex items-center justify-center  border-white/40 rounded-lg  text-black text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
               D
             </div>
             <p className="mt-2 font-semibold text-lg">Character Deficiency</p>
             <p className="text-black text-[16px] text-center flex-1">
-              Has a character defeciency. He may display negative character in flashes. May not be fatal character but will likely limit his ability to perform and develop. Teammates and coaches will notice defeciencies.
+              Has a character defeciency. He may display negative character in
+              flashes. May not be fatal character but will likely limit his
+              ability to perform and develop. Teammates and coaches will notice
+              defeciencies.
             </p>
           </div>
-
 
           <div className="bg-[#FF3A3A] text-white rounded-xl p-6 flex flex-col items-center justify-center">
             <div className="w-12 h-12 flex items-center justify-center  border-white/40 rounded-lg  text-white text-2xl font-bold bg-transparent bg-opacity-25 p-4 pt-4  border-2 border-white">
@@ -871,7 +1095,8 @@ const Profile = () => {
             </div>
             <p className="mt-2 font-semibold text-lg">Fatal Characteristics</p>
             <p className="text-white text-[16px] text-center flex-1">
-              Fatal characteristics. Will likely fail at the next level and likely to be a distraction to his teammates and coaches.
+              Fatal characteristics. Will likely fail at the next level and
+              likely to be a distraction to his teammates and coaches.
             </p>
           </div>
         </div>
