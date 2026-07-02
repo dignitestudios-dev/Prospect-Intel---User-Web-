@@ -6,21 +6,21 @@ const ActiveTable = ({ players }) => {
   const navigate = useNavigate();
 
   const gradeBgMap = {
-  A: "bg-black text-white",
-  "A-": "bg-black text-white",
+    A: "bg-black text-white",
+    "A-": "bg-black text-white",
 
-  B: "bg-[#1DB863] text-white",
-  "B+": "bg-[#1DB863] text-white",
-  "B-": "bg-[#1DB863] text-white",
+    B: "bg-[#1DB863] text-white",
+    "B+": "bg-[#1DB863] text-white",
+    "B-": "bg-[#1DB863] text-white",
 
-  C: "bg-[#B5B5B5] text-white",
-  "C+": "bg-[#B5B5B5] text-white",
-  "C-": "bg-[#B5B5B5] text-white",
+    C: "bg-[#B5B5B5] text-white",
+    "C+": "bg-[#B5B5B5] text-white",
+    "C-": "bg-[#B5B5B5] text-white",
 
-  D: "bg-[#F9C933] text-black",
+    D: "bg-[#F9C933] text-black",
 
-  F: "bg-[#FF3A3A] text-white",
-};
+    F: "bg-[#FF3A3A] text-white",
+  };
 
   return (
     <div className="bg-[#EAEEF8] rounded-xl">
@@ -46,7 +46,7 @@ const ActiveTable = ({ players }) => {
       {mockAtheleTableData?.map((p, i) => (
         <div
           key={i}
-          onClick={() => navigate(`/app/profile/${p.id}`)}
+          onClick={() => navigate(`/app/profile/${p?.id}`)}
           className="grid grid-cols-10 items-center py-4 text-sm px-2 cursor-pointer hover:bg-gray-100 transition"
         >
           <input
@@ -59,39 +59,39 @@ const ActiveTable = ({ players }) => {
           {/* Player */}
           <div className="flex items-center gap-3">
             <img
-              src={p.image}
-              alt={p.name}
+              src={p?.image}
+              alt={p?.name}
               className="w-8 h-8 rounded-full border border-gray-200"
             />
             <span className="font-medium text-gray-800 text-[13px] whitespace-nowrap">
-              {p.name}
+              {p?.name}
             </span>
           </div>
 
-          <div className="text-gray-600 text-[13px] px-12">{p.grad}</div>
+          <div className="text-gray-600 text-[13px] px-12">{p?.grad}</div>
           <div className="text-gray-600 text-[13px]">{p.position}</div>
 
           {/* Scores */}
           <div className="flex gap-3 px-4 items-center">
-  <span
-    className={`flex items-center border-2 justify-center w-10 h-10 rounded-xl font-bold text-[14px] 
-    ${gradeBgMap[p.footballCharacter.grade] || "bg-gray-400 text-white"}`}
-  >
-    {p.footballCharacter.grade || "N/A"}
-  </span>
+            <span
+              className={`flex items-center border-2 justify-center w-10 h-10 rounded-xl font-bold text-[14px] 
+    ${gradeBgMap[p?.footballCharacter?.grade] || "bg-gray-400 text-white"}`}
+            >
+              {p?.footballCharacter?.grade || "N/A"}
+            </span>
 
-  <span
-    className={`flex items-center justify-center w-10 h-10 border-2 rounded-xl font-bold text-[14px] 
-    ${gradeBgMap[p.personalCharacter.grade] || "bg-gray-400 text-white"}`}
-  >
-    {p.personalCharacter.grade || "N/A"}
-  </span>
-</div>
+            <span
+              className={`flex items-center justify-center w-10 h-10 border-2 rounded-xl font-bold text-[14px] 
+    ${gradeBgMap[p?.personalCharacter?.grade] || "bg-gray-400 text-white"}`}
+            >
+              {p?.personalCharacter?.grade || "N/A"}
+            </span>
+          </div>
 
-          <div className="text-gray-600 text-[13px] px-20">{p.height || "N/A"}</div>
-          <div className="text-gray-600 text-[13px] px-10">{p.weight || "N/A"}</div>
-          <div className="text-gray-600 text-[13px]">{p.school || "N/A"}</div>
-          <div className="text-gray-600 text-[13px]">{p.state || "N/A"}</div>
+          <div className="text-gray-600 text-[13px] px-20">{p?.height || "N/A"}</div>
+          <div className="text-gray-600 text-[13px] px-10">{p?.weight || "N/A"}</div>
+          <div className="text-gray-600 text-[13px]">{p?.school || "N/A"}</div>
+          <div className="text-gray-600 text-[13px]">{p?.state || "N/A"}</div>
 
           {/* College */}
           <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ const ActiveTable = ({ players }) => {
               className="w-5 h-5 object-contain"
             /> */}
             <span className="text-xs text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">
-              {p.commitment || "N/A"}
+              {p?.commitment || "N/A"}
             </span>
           </div>
         </div>
