@@ -170,7 +170,7 @@ export default function ActiveFilters({
                     />
                     <span className="text-sm text-gray-700 font-medium">
                       Sort by Name (A–Z)
-                    </span>
+                    </span>  ;;;
                   </label> */}
                 </div>
                 {schoolLoading ? (
