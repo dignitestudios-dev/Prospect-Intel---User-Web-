@@ -36,13 +36,19 @@ export default function ActiveFilters({
   setSelectedState,
   setSelectedCity,
   personalPiScore,
-  footballPiScore
+  footballPiScore,
+  searchTerm,
+  setSearchTerm,
+  sortByName,
+  setSortByName
 }) {
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= schools?.pagination?.totalPages) {
       setSchoolPage(newPage);
     }
   };
+
 
   return (
     <div className="w-[300px] p-6 pt-4 border-l-2 border-gray-200 mb-2">
@@ -131,7 +137,29 @@ export default function ActiveFilters({
 
 
             {isOpen && (
+
               <div className="absolute z-10 pb-4 pe-2 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+                <div className="p-2 sticky top-0 bg-white z-10 border-b">
+                  <input
+                    type="text"
+                    placeholder="Search committed college..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg p-2 text-sm outline-none"
+                  />
+
+                  <label className="flex items-center gap-2 mt-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sortByName}
+                      onChange={(e) => setSortByName(e.target.checked)}
+                      className="w-4 h-4 accent-blue-600"
+                    />
+                    <span className="text-sm text-gray-700 font-medium">
+                      Sort by Name (A–Z)
+                    </span>
+                  </label>
+                </div>
                 {schoolLoading ? (
                   <div className="p-3 space-y-2">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -165,13 +193,13 @@ export default function ActiveFilters({
                       </div>
                     ))}
 
-
+                    {/* 
                     {schools?.data?.length > 0 && (
                       <Pagination
                         pagination={schools?.pagination || { currentPage: 1, totalPages: 1 }}
                         onPageChange={handlePageChange}
                       />
-                    )}
+                    )} */}
                   </>
                 )}
               </div>

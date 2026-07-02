@@ -18,10 +18,19 @@ export const getAthlete = async ({
   );
   return res.data;
 };
-export const getSchool = async ({ schoolPage = 1, itemsPerPage = 10 }) => {
-  const res = await axiosinstance.get(
-    `/school?page=${schoolPage}&limit=${itemsPerPage}`,
-  );
+export const getSchool = async ({
+  page = 1,
+  itemsPerPage = 10,
+  searchTerm,
+  sort = false,
+}) => {
+  let url = `/school?page=${page}&limit=${itemsPerPage}&search=${searchTerm}`;
+
+  if (sort) {
+    url += `&sortBy=name&sortOrder=asc`;
+  }
+
+  const res = await axiosinstance.get(url);
   return res.data;
 };
 

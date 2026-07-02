@@ -100,7 +100,10 @@ const DummyHome = () => {
   const debouncedSearch = useDebounce(search, 500)
   const [selectedIds, setSelectedIds] = useState([])
   const [csvExportLoading, setCsvExportLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortByName, setSortByName] = useState(false);
 
+  const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
 
   const { data, isLoading, } = useQuery({
@@ -156,8 +159,8 @@ const DummyHome = () => {
 
 
   const { data: schools, isLoading: schoolLoading, } = useQuery({
-    queryKey: ["school", schoolPage],
-    queryFn: () => getSchool({ schoolPage }),
+    queryKey: ["school", schoolPage, debouncedSearchTerm, sortByName],
+    queryFn: () => getSchool({ page: schoolPage, searchTerm: debouncedSearchTerm, sort: sortByName }),
     keepPreviousData: true,
     staleTime: 1000 * 60 * 5,
 
@@ -348,6 +351,10 @@ const DummyHome = () => {
             setSelectedCity={setSelectedCity}
             personalPiScore={personalPiScore}
             footballPiScore={footballPiScore}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            setSortByName={setSortByName}
+            sortByName={sortByName} 
           />
 
 
