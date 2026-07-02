@@ -161,7 +161,7 @@ export default function ActiveFilters({
                     className="w-full border border-gray-300 rounded-lg p-2 text-sm outline-none"
                   />
 
-                  <label className="flex items-center gap-2 mt-3 cursor-pointer">
+                  {/* <label className="flex items-center gap-2 mt-3 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={sortByName}
@@ -171,7 +171,7 @@ export default function ActiveFilters({
                     <span className="text-sm text-gray-700 font-medium">
                       Sort by Name (A–Z)
                     </span>
-                  </label>
+                  </label> */}
                 </div>
                 {schoolLoading ? (
                   <div className="p-3 space-y-2">

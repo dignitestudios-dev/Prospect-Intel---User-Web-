@@ -24,11 +24,11 @@ export const getSchool = async ({
   searchTerm,
   sort = false,
 }) => {
-  let url = `/school?page=${page}&limit=${itemsPerPage}&search=${searchTerm}`;
+  let url = `/school?page=${page}&limit=${itemsPerPage}&search=${searchTerm}&sortBy=name&sortOrder=asc`;
 
-  if (sort) {
-    url += `&sortBy=name&sortOrder=asc`;
-  }
+  // if (sort) {
+  //   url += `&sortBy=name&sortOrder=asc`;
+  // }
 
   const res = await axiosinstance.get(url);
   return res.data;
