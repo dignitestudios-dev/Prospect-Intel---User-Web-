@@ -242,11 +242,13 @@ export default function ActiveFilters({
               onChange={(e) => setSelectedState(e.target.value)}
             >
               <option value="">Select State</option>
-              {Object.keys(citiesData).map((state) => (
-                <option key={state} value={state}>
-                  {state}
-                </option>
-              ))}
+              {Object.keys(citiesData)
+                .sort((a, b) => a.localeCompare(b))
+                .map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
+                ))}
             </select>
 
             {/* City Dropdown */}
@@ -256,11 +258,14 @@ export default function ActiveFilters({
               onChange={(e) => setSelectedCity(e.target.value)}
             >
               <option value="">Select City</option>
-              {cities.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
+              {cities
+                .slice()
+                .sort((a, b) => a.localeCompare(b))
+                .map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
             </select>
           </div>
         </FilterSection>
