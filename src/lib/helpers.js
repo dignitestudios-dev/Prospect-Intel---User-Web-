@@ -186,9 +186,19 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   const CYAN = [0, 174, 239];
 
   // ── Safe string ─────────────────────────────────────────────
-  const val = (v) =>
-    v !== undefined && v !== null && v !== "" ? String(v) : "N/A";
+  const sanitizeText = (str) => {
+    return String(str)
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/<\/?[a-z][\s\S]*?>/gi, "")
+      .replace(/~~(.*?)~~/g, "$1")
+      .replace(/[^\x00-\xFF]/g, "")
+      .trim();
+  };
 
+  // ── Safe string ─────────────────────────────────────────────
+  const val = (v) =>
+    v !== undefined && v !== null && v !== "" ? sanitizeText(String(v)) : "N/A";
   // ── Drawing primitives ───────────────────────────────────────
   const fillRect = (x, y, w, h, rgb) => {
     doc.setFillColor(...rgb);
