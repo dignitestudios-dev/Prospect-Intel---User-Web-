@@ -188,6 +188,12 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   // ── Safe string ─────────────────────────────────────────────
   const sanitizeText = (str) => {
     return String(str)
+      .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\u2043]/g, "-")
+      .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+      .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+      .replace(/\u2026/g, "...")
+      .replace(/[\u00A0\u2002-\u200A\u202F\u205F\u3000]/g, " ")
+      .replace(/[\u2022\u2023\u2044]/g, "-")
       .normalize("NFKD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/<\/?[a-z][\s\S]*?>/gi, "")
@@ -862,7 +868,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   const measureListH = (items) =>
     items.reduce(
       (total, item) => {
-        const lines = doc.splitTextToSize(item, OV_W - OV_PAD * 2 - 12);
+        const lines = doc.splitTextToSize(sanitizeText(item), OV_W - OV_PAD * 2 - 12);
         return total + Math.max(listItemH, lines.length * 11 + 4);
       },
       50, // header + top padding
@@ -892,7 +898,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       doc.setTextColor(37, 99, 235);
       doc.text("✚", M + OV_PAD, sy);
       doc.setTextColor(...BLACK);
-      const lines = doc.splitTextToSize(item, OV_W - OV_PAD * 2 - 12);
+      const lines = doc.splitTextToSize(sanitizeText(item), OV_W - OV_PAD * 2 - 12);
       doc.text(lines, M + OV_PAD + 12, sy);
       sy += Math.max(listItemH, lines.length * 11 + 4);
     });
@@ -920,7 +926,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       doc.setTextColor(239, 68, 68);
       doc.text("✚", OV_RX + OV_PAD, wy);
       doc.setTextColor(...BLACK);
-      const lines = doc.splitTextToSize(item, OV_W - OV_PAD * 2 - 12);
+      const lines = doc.splitTextToSize(sanitizeText(item), OV_W - OV_PAD * 2 - 12);
       doc.text(lines, OV_RX + OV_PAD + 12, wy);
       wy += Math.max(listItemH, lines.length * 11 + 4);
     });
