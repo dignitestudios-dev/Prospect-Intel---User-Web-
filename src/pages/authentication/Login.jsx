@@ -9,6 +9,7 @@ import { signInSchema } from "../../schema/authentication/LoginSchema";
 import axiosinstance from "../../axios";
 import { useAppDispatch } from "../../lib/store/hook";
 import { login } from "../../lib/store/feature/authSlice";
+import { resetFilters } from "../../lib/store/feature/filterSlice";
 import { logActivity } from "../../lib/store/actions/activityActions";
 
 const Login = () => {
@@ -63,6 +64,7 @@ const Login = () => {
                 user: data?.user,
               }),
             );
+            dispatch(resetFilters());
 
             dispatch(
               logActivity({
@@ -73,7 +75,7 @@ const Login = () => {
             );
 
             SuccessToast(response.data?.message || "Login Successful");
-            navigate("/app/dashboard");
+            navigate("/app/dashboard", { replace: true });
           }
         } catch (error) {
           ErrorToast(

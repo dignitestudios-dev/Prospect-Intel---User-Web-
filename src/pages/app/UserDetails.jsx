@@ -38,9 +38,18 @@ const UserDetails = () => {
         {/* Accent Bar */}
         <div className="absolute top-0 left-0 w-full h-1 button-bg rounded-t-3xl" />
 
-        {/* Title + Icon */}
+        {/* Title + Icon + Back Button */}
         <div className="flex items-center justify-between">
-          <h1 className="text-[32px] md:text-[36px] font-bold">User Details</h1>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleBack}
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg border border-gray-600 transition-all text-sm cursor-pointer"
+            >
+              <FaChevronLeft className="text-xs" />
+              <span>Back</span>
+            </button>
+            <h1 className="text-[32px] md:text-[36px] font-bold">User Details</h1>
+          </div>
         </div>
       </div>
 

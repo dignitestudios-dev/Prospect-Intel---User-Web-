@@ -5,6 +5,7 @@ import {
   FaShieldAlt,
   FaBook,
   FaCheckCircle,
+  FaArrowLeft,
 } from "react-icons/fa";
 import {
   athletic,
@@ -19,7 +20,7 @@ import {
   RequestSentPopup,
   SendMessageModal,
 } from "../../components/PopupComponents";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { mockAtheleTableData } from "../../static/mockData";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getAtheleteById } from "../../lib/query/queryFn";
@@ -122,6 +123,7 @@ const AthleticBox = ({ title, icon, children }) => (
 
 const Profile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
   const [saveLoading, setSaveLoading] = useState(false);
@@ -604,6 +606,23 @@ const Profile = () => {
           loading={requestLoading}
         />
       )}
+
+      {/* Back Button */}
+      <div className="mb-4">
+        <button
+          onClick={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate("/app/dashboard");
+            }
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-black rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition-all font-medium text-sm cursor-pointer"
+        >
+          <FaArrowLeft className="text-xs" />
+          <span>Back</span>
+        </button>
+      </div>
 
       <div className="mx-auto bg-[#EAEEF8] overflow-hidden">
         <div className="border-gray-200 p-4 md:p-8 flex flex-col md:flex-row items-start">

@@ -35,6 +35,9 @@ const authSlice = createSlice({
       if (typeof window !== "undefined") {
         Cookies.remove("userToken");
         Cookies.remove("user");
+        try {
+          sessionStorage.removeItem("athlete_filters");
+        } catch (e) {}
       }
     },
   },

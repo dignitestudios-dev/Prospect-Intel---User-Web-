@@ -3,9 +3,13 @@ import { useState } from "react";
 import { sidebarData } from "../../static/Sidebar";
 import { LogOut } from "lucide-react";
 import { Logo, navlogo, sidebar } from "../../assets/export";
+import { useAppDispatch } from "../../lib/store/hook";
+import { logout } from "../../lib/store/feature/authSlice";
+import { resetFilters } from "../../lib/store/feature/filterSlice";
 
 const DummySidebar = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = () => {
@@ -20,8 +24,11 @@ const DummySidebar = () => {
     localStorage.clear();
     sessionStorage.clear();
 
+    dispatch(logout());
+    dispatch(resetFilters());
+
     // ✅ Navigate to login page (or home)
-    navigate("/auth/login");
+    navigate("/auth/login", { replace: true });
   };
 
   return (
