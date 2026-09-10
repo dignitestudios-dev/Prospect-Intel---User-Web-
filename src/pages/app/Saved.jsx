@@ -231,7 +231,7 @@ const Saved = () => {
         {/* Top Header Bar consistent with Home */}
         <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-4 w-full sm:w-auto">
-            {/* <button
+            <button
               onClick={() => {
                 if (window.history.length > 1) {
                   navigate(-1);
@@ -244,7 +244,7 @@ const Saved = () => {
             >
               <FaArrowLeft className="text-xs" />
               <span>Back</span>
-            </button> */}
+            </button>
             <div className="relative w-full sm:w-[380px]">
               <FaSearch className="absolute shadow-xl left-4 top-1/2 -translate-y-1/2 text-black text-lg" />
               <input
@@ -254,7 +254,7 @@ const Saved = () => {
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full font-thin h-[50px] pl-10 pr-10 py-2.5 rounded-xl bg-white border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none placeholder-gray-400 text-sm shadow-sm"
               />
-              {/* {search && (
+              {search && (
                 <button
                   type="button"
                   onClick={() => setSearch("")}
@@ -263,7 +263,7 @@ const Saved = () => {
                 >
                   <X size={16} />
                 </button>
-              )} */}
+              )}
             </div>
           </div>
 
