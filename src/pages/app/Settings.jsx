@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
+import { FaArrowLeft } from "react-icons/fa";
 import { getProfile } from "../../lib/query/queryFn";
 import { formatDate } from "../../lib/helpers";
 import axiosinstance from "../../axios";
@@ -62,6 +63,20 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-[#E9EEF7] flex flex-col xl:flex-row p-4 md:p-8">
       <div className="w-full xl:w-64 p-4 md:p-8 pt-0 xl:pt-0 mb-4 xl:mb-0">
+        <button
+          onClick={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate("/app/dashboard");
+            }
+          }}
+          className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 bg-white text-gray-700 hover:text-black rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 transition-all font-medium text-xs cursor-pointer"
+        >
+          <FaArrowLeft className="text-xs" />
+          <span>Back</span>
+        </button>
+
         <div className="text-gray-700 font-medium mb-6 md:mb-10 text-lg md:text-[24px]">
           My Account
         </div>

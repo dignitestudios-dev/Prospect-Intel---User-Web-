@@ -10,7 +10,7 @@ import { logActivity } from "../../lib/store/actions/activityActions";
 import useDebounce, { useAppDispatch } from "../../lib/store/hook";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import axiosinstance from "../../axios";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw, X } from "lucide-react";
 
 const positions = [
   { label: "QB", value: "Quarterback" },
@@ -244,14 +244,24 @@ const DummyHome = () => {
           {/* Header Content */}
           <div className="flex items-center gap-4 w-full sm:w-auto">
             <div className="relative w-full sm:w-[380px]">
-              <FaSearch className="absolute shadow-xl left-4 top-1/2 -translate-y-1/2 text-black text-lg" />
+              <FaSearch className="absolute shadow-xl left-4 top-1/2 -translate-y-1/2 text-black text-lg pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search for players"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full font-thin h-[50px] pl-10 pr-4 py-2.5 rounded-xl bg-white border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none placeholder-gray-400 text-sm shadow-sm"
+                className="w-full font-thin h-[50px] pl-10 pr-10 py-2.5 rounded-xl bg-white border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none placeholder-gray-400 text-sm shadow-sm"
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                  title="Clear search"
+                >
+                  <X size={18} />
+                </button>
+              )}
             </div>
             <div className="hidden sm:block">
               <p className="cursor-pointer text-[#0085CA] font-medium">

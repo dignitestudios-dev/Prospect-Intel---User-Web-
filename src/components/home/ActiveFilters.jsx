@@ -8,6 +8,7 @@ import Pagination from "../global/Pagination";
 import { locationData } from "../../pages/app/DummyHome";
 import citiesData from "../../static/us";
 import { Emptyimg } from "../../assets/export";
+import { X } from "lucide-react";
 
 export default function ActiveFilters({
   positionPills,
@@ -153,13 +154,25 @@ export default function ActiveFilters({
 
               <div className="absolute z-10 pb-4 pe-2 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
                 <div className="p-2 sticky top-0 bg-white z-10 border-b">
-                  <input
-                    type="text"
-                    placeholder="Search committed college..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg p-2 text-sm outline-none"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search committed college..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg p-2 pr-8 text-sm outline-none"
+                    />
+                    {searchTerm && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchTerm("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                        title="Clear"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
 
                   {/* <label className="flex items-center gap-2 mt-3 cursor-pointer">
                     <input

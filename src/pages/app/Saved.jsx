@@ -4,9 +4,12 @@ import { getAtheleteSave } from "../../lib/query/queryFn";
 import { TableSkeleton } from "../../components/global/Skeleton";
 import axiosinstance from "../../axios";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
+import { useNavigate } from "react-router";
+import { FaArrowLeft } from "react-icons/fa";
 import { Emptyimg } from "../../assets/export";
 
 const Saved = () => {
+  const navigate = useNavigate();
   const [removeLoading, setRemoveLoading] = useState(null);
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["atheletesave"],
@@ -35,7 +38,22 @@ const Saved = () => {
   return (
     <div className="bg-[#EAEEF8] rounded-xl p-2 md:p-4">
       <div className="bg-[#EAEEF8] rounded-xl p-2 md:p-4">
-        <p className="text-sm md:text-[16px] font-bold mb-4">Saved Athletes</p>
+        <div className="flex items-center gap-3 mb-4">
+          <button
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate("/app/dashboard");
+              }
+            }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white text-gray-700 hover:text-black rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 transition-all font-medium text-xs cursor-pointer"
+          >
+            <FaArrowLeft className="text-xs" />
+            <span>Back</span>
+          </button>
+          <p className="text-sm md:text-[16px] font-bold">Saved Athletes</p>
+        </div>
 
         {/* Desktop Table */}
         <div className="hidden md:block overflow-x-auto">
