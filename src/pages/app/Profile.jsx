@@ -629,12 +629,15 @@ const Profile = () => {
           <img
             src={athleteDetail?.basicInfo?.image || Emptyimg}
             alt={athleteDetail?.basicInfo?.name}
-            className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-full shadow-xl mb-4 md:mb-0 md:mr-6"
+            className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-full shadow-xl mb-4 md:mb-0 md:mr-6 flex-shrink-0 object-cover"
           />
 
-          <div className="flex-1 flex flex-col md:flex-row md:justify-between w-full">
-            <div className="flex flex-col mb-4 md:mb-0">
-              <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 break-words">
+          <div className="flex-1 flex flex-col md:flex-row md:justify-between w-full min-w-0 gap-4">
+            <div className="flex flex-col mb-4 md:mb-0 min-w-0 flex-1">
+              <h1
+                title={athleteDetail?.basicInfo?.name}
+                className="text-xl md:text-3xl font-extrabold text-gray-900 break-words break-all line-clamp-2"
+              >
                 {athleteDetail?.basicInfo?.name}
               </h1>
 
@@ -692,10 +695,10 @@ const Profile = () => {
             </div>
 
             {/* Buttons */}
-            <div className="flex flex-col items-start md:items-end space-y-3 md:ml-6 w-full md:w-auto">
-              <div className="flex flex-row space-x-2 sm:space-x-3 w-full md:flex-row">
+            <div className="flex flex-col items-start md:items-end space-y-3 md:ml-4 w-full md:w-auto flex-shrink-0">
+              <div className="flex flex-row space-x-2 sm:space-x-3 w-full md:w-auto">
                 <button
-                  className="px-4 md:px-6 py-3 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50 flex-1 sm:flex-none sm:w-auto"
+                  className="px-4 md:px-6 py-3 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50 flex-1 sm:flex-none sm:w-auto whitespace-nowrap shadow-sm border border-gray-200 cursor-pointer"
                   onClick={handleSave}
                   disabled={saveLoading}
                 >
@@ -706,7 +709,7 @@ const Profile = () => {
                       : "Save Profile"}
                 </button>
                 <button
-                  className="px-4 py-3 bg-[#0085CA] text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex-1 sm:flex-none sm:w-auto"
+                  className="px-4 py-3 bg-[#0085CA] text-white text-sm font-medium rounded-lg hover:bg-blue-700 flex-1 sm:flex-none sm:w-auto whitespace-nowrap shadow-sm cursor-pointer"
                   onClick={handleRequestUpdates}
                 >
                   Request Updates
@@ -715,7 +718,7 @@ const Profile = () => {
 
               <button
                 onClick={handleDownloadPDF}
-                className="flex items-center px-4 md:px-6 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 w-full md:w-[270px] h-[50px] justify-center"
+                className="flex items-center px-4 md:px-6 py-2 bg-white text-gray-800 text-sm font-medium rounded-lg shadow-sm hover:bg-gray-50 w-full md:w-[270px] h-[50px] justify-center whitespace-nowrap border border-gray-200 cursor-pointer"
               >
                 Download PDF
               </button>

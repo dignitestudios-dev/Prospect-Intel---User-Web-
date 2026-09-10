@@ -21,6 +21,7 @@ const Pagination = ({
     pages.push(i);
   }
 
+  if (totalPages <= 0 || pagination?.total === 0 || pagination?.totalCount === 0) return null;
   if (totalPages <= 1 && !onItemsPerPageChange) return null;
 
   return (

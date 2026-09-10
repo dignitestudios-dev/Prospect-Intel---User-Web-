@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { FaSearch } from "react-icons/fa";
-import { RefreshCcw } from "lucide-react";
+import { FaSearch, FaArrowLeft } from "react-icons/fa";
+import { RefreshCcw, X, ArrowUpDown, ChevronUp, ChevronDown, Heart } from "lucide-react";
 import useDebounce, { useAppDispatch } from "../../lib/store/hook";
 import { logActivity } from "../../lib/store/actions/activityActions";
 import { getAtheleteSave } from "../../lib/query/queryFn";
@@ -10,8 +10,6 @@ import { TableSkeleton } from "../../components/global/Skeleton";
 import Pagination from "../../components/global/Pagination";
 import axiosinstance from "../../axios";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
-import { useNavigate } from "react-router";
-import { FaArrowLeft } from "react-icons/fa";
 import { Emptyimg } from "../../assets/export";
 
 const Saved = () => {
@@ -22,11 +20,30 @@ const Saved = () => {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 400);
   const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
   const [removeLoading, setRemoveLoading] = useState(null);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: ["atheletesave"],
-    queryFn: getAtheleteSave,
+    queryKey: [
+      "atheletesave",
+      page,
+      itemsPerPage,
+      debouncedSearch,
+      sortBy,
+      sortOrder,
+    ],
+    queryFn: () =>
+      getAtheleteSave({
+        page,
+        itemsPerPage,
+        search: debouncedSearch,
+        sortBy,
+        sortOrder,
+      }),
     keepPreviousData: true,
     staleTime: 1000 * 60 * 5,
   });
@@ -68,53 +85,145 @@ const Saved = () => {
       const response = await axiosinstance.post("/user/athlete/save", {
         athleteId: id,
       });
-      if (response?.status === 200) {
-        SuccessToast("Removed Successfully");
+      if (response?.status === 200 || response?.status === 201) {
+        SuccessToast(response?.data?.message || "Unsaved Successfully");
+        setSelectedIds((prev) => prev.filter((item) => item !== id));
         queryClient.invalidateQueries({ queryKey: ["atheletesave"] });
-        refetch();
+        queryClient.invalidateQueries({ queryKey: ["athlete"] });
       }
     } catch (err) {
-      ErrorToast(err?.response?.data?.message || err?.response?.data?.messsage || "Failed to remove athlete");
+      ErrorToast(
+        err?.response?.data?.message ||
+        err?.response?.data?.messsage ||
+        "Failed to unsave athlete"
+      );
     } finally {
       setRemoveLoading(null);
     }
   };
 
-  const filteredData = useMemo(() => {
-    if (!data || !Array.isArray(data)) return [];
-    if (!debouncedSearch?.trim()) return data;
-
-    const query = debouncedSearch.toLowerCase().trim();
-    return data.filter((p) => {
-      const name = p?.basicInfo?.name?.toLowerCase() || "";
-      const school = p?.basicInfo?.schoolName?.toLowerCase() || "";
-      const position = p?.basicInfo?.position?.toLowerCase() || "";
-      const gradYear = String(p?.basicInfo?.gradYear || "");
-      const college = p?.basicInfo?.committedCollege?.name?.toLowerCase() || "";
-      const state = p?.basicInfo?.state?.toLowerCase() || "";
-      const hometown = p?.basicInfo?.hometown?.toLowerCase() || "";
-      return (
-        name.includes(query) ||
-        school.includes(query) ||
-        position.includes(query) ||
-        gradYear.includes(query) ||
-        college.includes(query) ||
-        state.includes(query) ||
-        hometown.includes(query)
+  const handleBulkUnsave = async () => {
+    if (!selectedIds || selectedIds.length === 0) {
+      ErrorToast("Please select at least one athlete");
+      return;
+    }
+    setBulkLoading(true);
+    try {
+      const res = await axiosinstance.post("/user/athlete/save/bulk", {
+        athleteIds: selectedIds,
+        action: "unsave",
+      });
+      if (res.status === 200 || res.status === 201) {
+        SuccessToast(res.data?.message || "Athletes unsaved successfully!");
+        setSelectedIds([]);
+        queryClient.invalidateQueries({ queryKey: ["atheletesave"] });
+        queryClient.invalidateQueries({ queryKey: ["athlete"] });
+      }
+    } catch (err) {
+      ErrorToast(
+        err?.response?.data?.message ||
+        err?.response?.data?.messsage ||
+        "Failed to unsave athletes"
       );
-    });
-  }, [data, debouncedSearch]);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleSort = (columnKey) => {
+    if (sortBy === columnKey) {
+      if (sortOrder === "asc") {
+        setSortOrder("desc");
+      } else {
+        // 3rd click resets sorting
+        setSortBy("");
+        setSortOrder("asc");
+      }
+    } else {
+      setSortBy(columnKey);
+      setSortOrder("asc");
+    }
+    setPage(1);
+  };
+
+  const handleClearSort = () => {
+    setSortBy("");
+    setSortOrder("asc");
+    setPage(1);
+  };
+
+  const SortHeader = ({ label, sortKey, className = "" }) => {
+    const isSorted = sortBy === sortKey;
+    return (
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          handleSort(sortKey);
+        }}
+        className={`inline-flex items-center gap-1 cursor-pointer select-none transition-colors group max-w-full ${className}`}
+        title={`Sort by ${label}`}
+      >
+        <span
+          className={`font-bold text-[12px] xl:text-[13px] tracking-wide transition-colors truncate ${
+            isSorted ? "text-blue-600" : "text-gray-700 group-hover:text-blue-600"
+          }`}
+        >
+          {label}
+        </span>
+        <span
+          className={`flex items-center justify-center flex-shrink-0 transition-colors ${
+            isSorted
+              ? "text-blue-600 bg-blue-100 rounded px-0.5 py-0.5"
+              : "text-gray-400 group-hover:text-blue-500"
+          }`}
+        >
+          {isSorted ? (
+            sortOrder === "asc" ? (
+              <ChevronUp size={13} className="stroke-[2.5]" />
+            ) : (
+              <ChevronDown size={13} className="stroke-[2.5]" />
+            )
+          ) : (
+            <ArrowUpDown size={11} className="opacity-50 group-hover:opacity-100" />
+          )}
+        </span>
+      </div>
+    );
+  };
+
+  const athleteList = useMemo(() => {
+    if (Array.isArray(data?.data)) return data.data;
+    if (Array.isArray(data)) return data;
+    return [];
+  }, [data]);
+
+  const totalPages =
+    data?.pagination?.totalPages ||
+    Math.ceil((athleteList?.length || 0) / itemsPerPage) ||
+    1;
+
+  const totalResults =
+    data?.pagination?.total ??
+    data?.pagination?.totalCount ??
+    athleteList?.length ??
+    0;
+
+  const displayData = useMemo(() => {
+    if (data?.pagination) {
+      return athleteList;
+    }
+    const start = (page - 1) * itemsPerPage;
+    return athleteList.slice(start, start + itemsPerPage);
+  }, [data?.pagination, athleteList, page, itemsPerPage]);
 
   useEffect(() => {
     setPage(1);
+    setSelectedIds([]);
   }, [debouncedSearch]);
 
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const totalPages = Math.ceil((filteredData?.length || 0) / itemsPerPage) || 1;
-  const paginatedData = useMemo(() => {
-    const start = (page - 1) * itemsPerPage;
-    return filteredData.slice(start, start + itemsPerPage);
-  }, [filteredData, page, itemsPerPage]);
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [page]);
 
   return (
     <div className="w-full min-h-screen h-full bg-[#F5F7FB] flex justify-center items-start font-sans">
@@ -122,6 +231,20 @@ const Saved = () => {
         {/* Top Header Bar consistent with Home */}
         <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-4 w-full sm:w-auto">
+            {/* <button
+              onClick={() => {
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate("/app/dashboard");
+                }
+              }}
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white text-gray-700 hover:text-black rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50 transition-all font-medium text-xs cursor-pointer flex-shrink-0"
+              title="Back"
+            >
+              <FaArrowLeft className="text-xs" />
+              <span>Back</span>
+            </button> */}
             <div className="relative w-full sm:w-[380px]">
               <FaSearch className="absolute shadow-xl left-4 top-1/2 -translate-y-1/2 text-black text-lg" />
               <input
@@ -129,8 +252,18 @@ const Saved = () => {
                 placeholder="Search saved players"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full font-thin h-[50px] pl-10 pr-4 py-2.5 rounded-xl bg-white border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none placeholder-gray-400 text-sm shadow-sm"
+                className="w-full font-thin h-[50px] pl-10 pr-10 py-2.5 rounded-xl bg-white border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none placeholder-gray-400 text-sm shadow-sm"
               />
+              {/* {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  title="Clear search"
+                >
+                  <X size={16} />
+                </button>
+              )} */}
             </div>
           </div>
 
@@ -150,68 +283,194 @@ const Saved = () => {
 
         {/* Main Content Area */}
         <div className="p-6 pt-4 border-t-2 border-gray-100 w-full">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-800">
-              {filteredData?.length || 0} Results
-            </h3>
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h3 className="text-lg font-bold text-gray-800">
+                {totalResults} Results
+              </h3>
+              {sortBy && (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-medium">
+                  <span>
+                    Sorted: <strong>{sortBy}</strong> ({sortOrder.toUpperCase()})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleClearSort}
+                    className="hover:bg-blue-200 rounded p-0.5 transition-colors cursor-pointer text-blue-700"
+                    title="Clear sorting"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {sortBy && (
+                <button
+                  type="button"
+                  onClick={handleClearSort}
+                  className="text-xs font-semibold text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
+                >
+                  Reset Sorting
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleBulkUnsave}
+                disabled={bulkLoading || selectedIds.length === 0}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm border ${
+                  selectedIds.length > 0
+                    ? "bg-red-500 hover:bg-red-600 text-white border-transparent shadow-red-200 cursor-pointer"
+                    : "bg-white text-gray-400 border-gray-200 opacity-70 cursor-not-allowed"
+                }`}
+                title={
+                  selectedIds.length > 0
+                    ? `Unsave ${selectedIds.length} selected athlete(s)`
+                    : "Select athletes using checkboxes to Bulk Unsave"
+                }
+              >
+                <Heart
+                  size={16}
+                  className={
+                    selectedIds.length > 0
+                      ? "fill-white text-white"
+                      : "text-gray-400"
+                  }
+                />
+                <span>
+                  {bulkLoading
+                    ? "Unsaving..."
+                    : selectedIds.length > 0
+                    ? `Mass Unsave
+ (${selectedIds.length})`
+                    : "Mass Unsave"}
+                </span>
+              </button>
+            </div>
           </div>
 
           <div className="bg-[#EAEEF8] rounded-xl">
             {/* Desktop Table */}
             <div className="hidden md:block">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[900px]">
+              <div className="overflow-hidden">
+                <table className="w-full text-left border-collapse table-fixed">
                 <thead>
-                  <tr className="text-gray-500 font-semibold bg-white/30 border-2 border-white text-[14px] capitalize">
-                    <th className="p-4 rounded-l-xl">Player</th>
-                    <th className="p-4">Grad</th>
-                    <th className="p-4">Position</th>
-                    <th className="p-4 whitespace-nowrap">Football / Personal Character</th>
-                    <th className="p-4">H</th>
-                    <th className="p-4">W</th>
-                    <th className="p-4">High School</th>
-                    <th className="p-4">State</th>
-                    <th className="p-4">Committed College</th>
-                    <th className="p-4 text-center rounded-r-xl">Action</th>
+                  <tr className="text-gray-700 font-bold bg-white/70 border-2 border-white text-[12px] xl:text-[13px] capitalize shadow-xs">
+                    <th className="p-2.5 rounded-l-xl w-[38px] text-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          displayData?.length > 0 &&
+                          selectedIds.length === displayData?.length
+                        }
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds(displayData?.map((a) => a._id));
+                          } else {
+                            setSelectedIds([]);
+                          }
+                        }}
+                        className="w-4 h-4 rounded text-blue-600 bg-white border-2 border-gray-300 checked:bg-blue-600 checked:border-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      />
+                    </th>
+                    <th className="p-2.5 w-[15%]">
+                      <SortHeader label="Player" sortKey="Player" />
+                    </th>
+                    <th className="p-2.5 w-[6%]">
+                      <SortHeader label="Grad" sortKey="Grad" />
+                    </th>
+                    <th className="p-2.5 w-[10%]">
+                      <SortHeader label="Position" sortKey="Position" />
+                    </th>
+                    <th className="p-2.5 w-[13%]">
+                      <div className="flex items-center gap-1">
+                        <SortHeader label="Football" sortKey="Football Character" />
+                        <span className="text-gray-400 font-normal">/</span>
+                        <SortHeader label="Personal" sortKey="Personal Character" />
+                      </div>
+                    </th>
+                    <th className="p-2.5 w-[5%] text-center">
+                      <SortHeader label="H" sortKey="Height" className="justify-center" />
+                    </th>
+                    <th className="p-2.5 w-[5%] text-center">
+                      <SortHeader label="W" sortKey="Width" className="justify-center" />
+                    </th>
+                    <th className="p-2.5 w-[13%]">
+                      <SortHeader label="High School" sortKey="High School" />
+                    </th>
+                    <th className="p-2.5 w-[9%]">
+                      <SortHeader label="State" sortKey="State" />
+                    </th>
+                    <th className="p-2.5 w-[15%]">
+                      <SortHeader label="Committed College" sortKey="Committed College" />
+                    </th>
+                    <th className="p-2.5 rounded-r-xl w-[9%] text-center">
+                      Action
+                    </th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {isLoading ? (
                     <TableSkeleton rows={5} />
-                  ) : filteredData?.length === 0 ? (
+                  ) : displayData?.length === 0 ? (
                     <tr>
                       <td
-                        colSpan="10"
+                        colSpan="11"
                         className="text-center text-gray-400 py-10 text-[14px]"
                       >
                         No Saved Athlete Found
                       </td>
                     </tr>
                   ) : (
-                    paginatedData?.map((p, i) => (
+                    displayData?.map((p, i) => (
                       <tr
                         key={p?._id || i}
                         onClick={() => handleAthleteClick(p)}
                         className="cursor-pointer border-b border-gray-200/50 hover:bg-white/40 transition-colors"
                       >
-                        <td className="p-4">
-                          <div className="flex items-center gap-3 min-w-0 pr-2">
+                        <td
+                          className="p-2.5 text-center"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(p?._id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds((prev) => [...prev, p?._id]);
+                              } else {
+                                setSelectedIds((prev) =>
+                                  prev.filter((id) => id !== p?._id)
+                                );
+                              }
+                            }}
+                            className="w-4 h-4 text-blue-600 rounded cursor-pointer border-gray-300 focus:ring-blue-500"
+                          />
+                        </td>
+
+                        <td className="p-2.5">
+                          <div className="flex items-center gap-2 min-w-0">
                             <img
                               src={p.basicInfo?.image || Emptyimg}
                               alt={p.basicInfo?.name}
-                              className="w-8 h-8 rounded-full border border-gray-200 object-cover flex-shrink-0"
+                              className="w-7 h-7 rounded-full border border-gray-200 object-cover flex-shrink-0"
                             />
-                            <div className="min-w-0">
-                              <span className="font-medium text-gray-800 text-[13px] break-all block min-w-0">
+                            <div className="min-w-0 flex-1">
+                              <span
+                                title={p.basicInfo?.name}
+                                className="font-medium text-gray-800 text-[13px] truncate block min-w-0"
+                              >
                                 {p.basicInfo?.name || "N/A"}
                               </span>
                               {p.basicInfo?.status?.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-1">
+                                <div className="flex flex-wrap gap-1 mt-0.5">
                                   {p.basicInfo.status.map((tag, idx) => (
                                     <span
                                       key={idx}
-                                      className="py-0.5 px-1.5 text-[8px] rounded-full font-semibold border border-gray-300 text-gray-600 bg-white/70"
+                                      className="py-0.5 px-1 text-[8px] rounded-full font-semibold border border-gray-300 text-gray-600 bg-white/70"
                                     >
                                       {tag.toUpperCase()}
                                     </span>
@@ -222,78 +481,97 @@ const Saved = () => {
                           </div>
                         </td>
 
-                        <td className="p-4 text-gray-600 text-[13px]">
+                        <td
+                          title={p.basicInfo?.gradYear}
+                          className="p-2.5 text-gray-700 text-[13px] font-medium truncate"
+                        >
                           {p.basicInfo?.gradYear || "N/A"}
                         </td>
 
-                        <td className="p-4 text-gray-600 text-[13px]">
+                        <td
+                          title={p.basicInfo?.position}
+                          className="p-2.5 text-gray-700 text-[13px] truncate"
+                        >
                           {p.basicInfo?.position || "N/A"}
                         </td>
 
-                        <td className="p-4">
-                          <div className="flex gap-2 items-center">
+                        <td className="p-2.5">
+                          <div className="flex gap-1.5 items-center">
                             <span
                               className={`flex items-center justify-center border-2 ${getGradeColor(
                                 p.athlete?.footballPiScore,
-                              )} text-white rounded-xl font-bold text-[14px] px-2.5 py-1 min-w-[2.6rem]`}
-                              title="Football Score"
+                              )} text-white rounded-lg font-bold text-[12px] px-1.5 py-0.5 min-w-[2.2rem] shadow-2xs`}
+                              title={`Football Character: ${p.athlete?.footballPiScore || "--"}`}
                             >
                               {p.athlete?.footballPiScore || "--"}
                             </span>
                             <span
                               className={`flex items-center justify-center border-2 ${getGradeColor(
                                 p.athlete?.personalPiScore,
-                              )} text-white rounded-xl font-bold text-[14px] px-2.5 py-1 min-w-[2.6rem]`}
-                              title="Personal Score"
+                              )} text-white rounded-lg font-bold text-[12px] px-1.5 py-0.5 min-w-[2.2rem] shadow-2xs`}
+                              title={`Personal Character: ${p.athlete?.personalPiScore || "--"}`}
                             >
                               {p.athlete?.personalPiScore || "--"}
                             </span>
                           </div>
                         </td>
 
-                        <td className="p-4 text-gray-600 text-[13px]">
+                        <td
+                          title={p.basicInfo?.height}
+                          className="p-2.5 text-center text-gray-700 text-[13px] truncate"
+                        >
                           {p.basicInfo?.height || "N/A"}
                         </td>
 
-                        <td className="p-4 text-gray-600 text-[13px]">
+                        <td
+                          title={p.basicInfo?.weight}
+                          className="p-2.5 text-center text-gray-700 text-[13px] truncate"
+                        >
                           {p.basicInfo?.weight || "N/A"}
                         </td>
 
-                        <td className="p-4 text-gray-600 text-[13px] break-words">
+                        <td
+                          title={p.basicInfo?.schoolName || p.basicInfo?.hometown}
+                          className="p-2.5 text-gray-700 text-[13px] truncate"
+                        >
                           {p.basicInfo?.schoolName || p.basicInfo?.hometown || "N/A"}
                         </td>
 
-                        <td className="p-4 text-gray-600 text-[13px]">
+                        <td
+                          title={p.basicInfo?.state}
+                          className="p-2.5 text-gray-700 text-[13px] truncate"
+                        >
                           {p.basicInfo?.state || "N/A"}
                         </td>
 
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
+                        <td className="p-2.5">
+                          <div className="flex items-center gap-1.5 min-w-0">
                             <img
                               src={p.basicInfo?.committedCollege?.logo || Emptyimg}
                               alt="College Logo"
-                              className="w-[28px] h-[28px] object-contain flex-shrink-0"
+                              className="w-[22px] h-[22px] object-contain flex-shrink-0"
                             />
-                            <span className="text-[13px] text-gray-600 break-words">
+                            <span
+                              title={p.basicInfo?.committedCollege?.name || "N/A"}
+                              className="text-[13px] text-gray-700 truncate font-medium block min-w-0"
+                            >
                               {p.basicInfo?.committedCollege?.name || "N/A"}
                             </span>
                           </div>
                         </td>
 
-                        <td className="p-4 text-center">
+                        <td className="p-2.5 text-center" onClick={(e) => e.stopPropagation()}>
                           <button
                             disabled={removeLoading === p?._id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSave(p?._id);
-                            }}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                            onClick={() => handleSave(p?._id)}
+                            className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
                               removeLoading === p?._id
                                 ? "opacity-50 cursor-not-allowed bg-gray-100 text-gray-400 border-gray-200"
-                                : "bg-white/80 hover:bg-red-50 text-red-600 border-red-200 hover:border-red-300 shadow-sm cursor-pointer"
+                                : "bg-white hover:bg-red-50 text-red-600 border-red-200 hover:border-red-300 shadow-sm cursor-pointer"
                             }`}
+                            title="Unsave athlete"
                           >
-                            {removeLoading === p?._id ? "Removing..." : "Remove"}
+                            {removeLoading === p?._id ? "..." : "Unsave"}
                           </button>
                         </td>
                       </tr>
@@ -303,44 +581,93 @@ const Saved = () => {
               </table>
               </div>
 
-              <Pagination
-                pagination={{ currentPage: page, totalPages }}
-                onPageChange={(newPage) => setPage(newPage)}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={(newVal) => {
-                  setItemsPerPage(newVal);
-                  setPage(1);
-                }}
-                itemsPerPageOptions={[10, 25, 50, 100]}
-              />
+              {!isLoading && displayData?.length > 0 && (
+                <Pagination
+                  pagination={{ currentPage: page, totalPages }}
+                  onPageChange={(newPage) => setPage(newPage)}
+                  itemsPerPage={itemsPerPage}
+                  onItemsPerPageChange={(newVal) => {
+                    setItemsPerPage(newVal);
+                    setPage(1);
+                  }}
+                  itemsPerPageOptions={[10, 25, 50, 100]}
+                />
+              )}
             </div>
 
             {/* Mobile Cards */}
             <div className="block md:hidden space-y-4">
+              {displayData?.length > 0 && (
+                <div className="bg-white/40 rounded-xl p-3 flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={
+                        displayData?.length > 0 &&
+                        selectedIds.length === displayData?.length
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedIds(displayData?.map((a) => a._id));
+                        } else {
+                          setSelectedIds([]);
+                        }
+                      }}
+                      className="w-5 h-5 rounded text-blue-600 bg-white border-2 border-gray-300 checked:bg-blue-600 checked:border-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Select All</span>
+                  </label>
+                  {selectedIds.length > 0 && (
+                    <span className="text-xs font-semibold text-blue-600">
+                      {selectedIds.length} selected
+                    </span>
+                  )}
+                </div>
+              )}
+
               {isLoading ? (
                 <div className="text-center p-10 text-[14px] text-gray-400">
                   Loading...
                 </div>
-              ) : filteredData?.length === 0 ? (
+              ) : displayData?.length === 0 ? (
                 <div className="text-center p-10 text-[14px] text-gray-400 bg-white/40 rounded-xl">
                   No Saved Athlete Found
                 </div>
               ) : (
-                paginatedData?.map((p, i) => (
+                displayData?.map((p, i) => (
                   <div
                     key={p?._id || i}
                     className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => handleAthleteClick(p)}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <input
+                          checked={selectedIds.includes(p?._id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            if (e.target.checked) {
+                              setSelectedIds((prev) => [...prev, p?._id]);
+                            } else {
+                              setSelectedIds((prev) =>
+                                prev.filter((id) => id !== p?._id)
+                              );
+                            }
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          type="checkbox"
+                          className="w-5 h-5 text-blue-600 rounded cursor-pointer flex-shrink-0"
+                        />
                         <img
                           src={p.basicInfo?.image || Emptyimg}
                           alt={p.basicInfo?.name}
-                          className="w-10 h-10 rounded-full border border-gray-200 object-cover"
+                          className="w-10 h-10 rounded-full border border-gray-200 object-cover flex-shrink-0"
                         />
-                        <div className="min-w-0">
-                          <span className="font-medium text-gray-800 text-[14px] break-all block min-w-0">
+                        <div className="min-w-0 flex-1">
+                          <span
+                            title={p.basicInfo?.name}
+                            className="font-medium text-gray-800 text-[14px] truncate block"
+                          >
                             {p.basicInfo?.name || "N/A"}
                           </span>
                           {p.basicInfo?.status?.length > 0 && (
@@ -363,13 +690,13 @@ const Saved = () => {
                           e.stopPropagation();
                           handleSave(p?._id);
                         }}
-                        className={`px-3 py-1 text-xs font-medium rounded-lg border transition-all ${
+                        className={`px-3 py-1 text-xs font-medium rounded-lg border transition-all flex-shrink-0 ${
                           removeLoading === p?._id
                             ? "opacity-50 cursor-not-allowed bg-gray-100 text-gray-400"
                             : "bg-white hover:bg-red-50 text-red-600 border-red-200 shadow-sm cursor-pointer"
                         }`}
                       >
-                        {removeLoading === p?._id ? "Removing..." : "Remove"}
+                        {removeLoading === p?._id ? "..." : "Unsave"}
                       </button>
                     </div>
 
@@ -458,16 +785,18 @@ const Saved = () => {
                 ))
               )}
 
-              <Pagination
-                pagination={{ currentPage: page, totalPages }}
-                onPageChange={(newPage) => setPage(newPage)}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={(newVal) => {
-                  setItemsPerPage(newVal);
-                  setPage(1);
-                }}
-                itemsPerPageOptions={[10, 25, 50, 100]}
-              />
+              {!isLoading && displayData?.length > 0 && (
+                <Pagination
+                  pagination={{ currentPage: page, totalPages }}
+                  onPageChange={(newPage) => setPage(newPage)}
+                  itemsPerPage={itemsPerPage}
+                  onItemsPerPageChange={(newVal) => {
+                    setItemsPerPage(newVal);
+                    setPage(1);
+                  }}
+                  itemsPerPageOptions={[10, 25, 50, 100]}
+                />
+              )}
             </div>
           </div>
         </div>

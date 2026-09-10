@@ -16,6 +16,8 @@ export const initialFilterState = {
   status: "active",
   searchTerm: "",
   sortByName: false,
+  sortBy: "",
+  sortOrder: "asc",
 };
 
 const loadStoredFilters = () => {
