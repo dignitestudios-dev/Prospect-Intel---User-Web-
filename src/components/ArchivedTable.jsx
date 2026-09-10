@@ -13,6 +13,8 @@ const ArchivedTable = ({
   setPage,
   selectedIds,
   setSelectedIds,
+  itemsPerPage,
+  setItemsPerPage,
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -41,8 +43,9 @@ const ArchivedTable = ({
   return (
     <div className="bg-[#EAEEF8] rounded-xl">
       {/* Desktop Table */}
-      <div className="hidden md:block overflow-x-auto">
-        {/* Table Header */}
+      <div className="hidden md:block">
+        <div className="overflow-x-auto">
+          {/* Table Header */}
         <div className="grid grid-cols-10 text-gray-500 rounded-xl font-semibold bg-white/30 border-2 border-white p-6 text-[14px] capitalize px-2 min-w-[800px]">
           <input
             type="checkbox"
@@ -110,13 +113,13 @@ const ArchivedTable = ({
                 type="checkbox"
                 className="w-6 h-6 place-self-center text-black rounded"
               />
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0 pr-2">
                 <img
                   src={p.basicInfo?.image || Emptyimg}
                   alt={p.basicInfo?.name}
-                  className="w-8 h-8 rounded-full border border-gray-200"
+                  className="w-8 h-8 rounded-full border border-gray-200 flex-shrink-0 object-cover"
                 />
-                <span className="font-medium text-gray-800 text-[13px] break-words block">
+                <span className="font-medium text-gray-800 text-[13px] break-all block min-w-0">
                   {p.basicInfo?.name}
                 </span>
               </div>
@@ -150,22 +153,32 @@ const ArchivedTable = ({
               <div className="text-gray-600 text-[13px] px-3">
                 {p.basicInfo?.state || "N/A"}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <img
                   src={p.basicInfo?.committedCollege?.logo || Emptyimg}
                   alt="College Logo"
-                  className="w-[30px] h-[30px] object-contain"
+                  className="w-[30px] h-[30px] object-contain flex-shrink-0"
                 />
-                <span className="text-[14px] text-gray-600 break-words">
+                <span className="text-[14px] text-gray-600 break-all">
                   {p.basicInfo?.committedCollege?.name || "N/A"}
                 </span>
               </div>
             </div>
           ))
         )}
+        </div>
+
         <Pagination
           pagination={pagination || { currentPage: 1, totalPages: 1 }}
           onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={(val) => {
+            if (setItemsPerPage) {
+              setItemsPerPage(val);
+              setPage(1);
+            }
+          }}
+          itemsPerPageOptions={[10, 25, 50, 100]}
         />
       </div>
 
@@ -240,13 +253,13 @@ const ArchivedTable = ({
                   type="checkbox"
                   className="w-6 h-6 text-black rounded"
                 />
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <img
                     src={p.basicInfo?.image || Emptyimg}
                     alt={p.basicInfo?.name}
-                    className="w-10 h-10 rounded-full border border-gray-200"
+                    className="w-10 h-10 rounded-full border border-gray-200 flex-shrink-0 object-cover"
                   />
-                  <span className="font-medium text-gray-800 text-[14px]">
+                  <span className="font-medium text-gray-800 text-[14px] break-all min-w-0">
                     {p.basicInfo?.name}
                   </span>
                 </div>
@@ -332,6 +345,14 @@ const ArchivedTable = ({
         <Pagination
           pagination={pagination || { currentPage: 1, totalPages: 1 }}
           onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={(val) => {
+            if (setItemsPerPage) {
+              setItemsPerPage(val);
+              setPage(1);
+            }
+          }}
+          itemsPerPageOptions={[10, 25, 50, 100]}
         />
       </div>
     </div>

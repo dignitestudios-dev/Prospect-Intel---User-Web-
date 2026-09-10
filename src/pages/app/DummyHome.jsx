@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FaPrint, FaDownload, FaSearch } from "react-icons/fa";
 import ArchivedTable from "../../components/ArchivedTable";
 import { textOne, textThree, textTwo } from "../../assets/export";
@@ -7,7 +7,8 @@ import { getAthlete, getSchool } from "../../lib/query/queryFn";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import citiesData from "../../static/us";
 import { logActivity } from "../../lib/store/actions/activityActions";
-import useDebounce, { useAppDispatch } from "../../lib/store/hook";
+import useDebounce, { useAppDispatch, useAppSelector } from "../../lib/store/hook";
+import { setFilters, resetFilters } from "../../lib/store/feature/filterSlice";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import axiosinstance from "../../axios";
 import { RefreshCcw, X } from "lucide-react";
@@ -68,34 +69,81 @@ export const locationData = {
 const DummyHome = () => {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [schoolPage, setSchoolPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const savedFilters = useAppSelector((state) => state.filters);
+
+  const [page, setPage] = useState(savedFilters?.page || 1);
+  const [itemsPerPage, setItemsPerPage] = useState(savedFilters?.itemsPerPage || 10);
+  const [schoolPage, setSchoolPage] = useState(savedFilters?.schoolPage || 1);
+  const [search, setSearch] = useState(savedFilters?.search || "");
   const [isArchived, setIsArchived] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState("");
-  const [personalPiScore, setPersonalPiScore] = useState("");
-  const [footballPiScore, setFootBallPiScore] = useState("");
-  const [selectedSchool, setSelectedSchool] = useState(null);
+  const [selectedPosition, setSelectedPosition] = useState(savedFilters?.selectedPosition || "");
+  const [personalPiScore, setPersonalPiScore] = useState(savedFilters?.personalPiScore || "");
+  const [footballPiScore, setFootBallPiScore] = useState(savedFilters?.footballPiScore || "");
+  const [selectedSchool, setSelectedSchool] = useState(savedFilters?.selectedSchool || null);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedState, setSelectedState] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-  const [cities, setCities] = useState([]);
-  const [selectedGradeYear, setSelectedGradeYear] = useState("");
+  const [selectedState, setSelectedState] = useState(savedFilters?.selectedState || "");
+  const [selectedCity, setSelectedCity] = useState(savedFilters?.selectedCity || "");
+  const [cities, setCities] = useState(
+    savedFilters?.selectedState ? citiesData[savedFilters.selectedState] || [] : []
+  );
+  const [selectedGradeYear, setSelectedGradeYear] = useState(savedFilters?.selectedGradeYear || "");
   const SchoolId = selectedSchool?.id || "";
-  const [status, setStatus] = useState("active");
+  const [status, setStatus] = useState(savedFilters?.status ?? "active");
   const isActive =
     status === "active" ? true : status === "inactive" ? false : "";
   const debouncedSearch = useDebounce(search, 500);
   const [selectedIds, setSelectedIds] = useState([]);
   const [csvExportLoading, setCsvExportLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortByName, setSortByName] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(savedFilters?.searchTerm || "");
+  const [sortByName, setSortByName] = useState(savedFilters?.sortByName || false);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const isFirstMount = useRef(true);
+  const isStateMount = useRef(true);
+
+  // Keep filters saved in Redux and sessionStorage
+  useEffect(() => {
+    dispatch(
+      setFilters({
+        page,
+        itemsPerPage,
+        schoolPage,
+        search,
+        selectedPosition,
+        personalPiScore,
+        footballPiScore,
+        selectedSchool,
+        selectedGradeYear,
+        selectedState,
+        selectedCity,
+        status,
+        searchTerm,
+        sortByName,
+      })
+    );
+  }, [
+    page,
+    itemsPerPage,
+    schoolPage,
+    search,
+    selectedPosition,
+    personalPiScore,
+    footballPiScore,
+    selectedSchool,
+    selectedGradeYear,
+    selectedState,
+    selectedCity,
+    status,
+    searchTerm,
+    sortByName,
+    dispatch,
+  ]);
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: [
       "athlete",
       page,
+      itemsPerPage,
       search,
       selectedPosition,
       personalPiScore,
@@ -109,6 +157,7 @@ const DummyHome = () => {
     queryFn: () =>
       getAthlete({
         page,
+        itemsPerPage,
         search: debouncedSearch,
         selectedPosition,
         personalPiScore,
@@ -124,12 +173,16 @@ const DummyHome = () => {
   });
 
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     setPage(1);
     const filters = {
       search,
       position: selectedPosition,
       personalPiScore,
-      footballPiScore: footballPiScore?.label,
+      footballPiScore: footballPiScore?.label || footballPiScore,
       school: selectedSchool?.name || "",
       gradYear: selectedGradeYear,
       state: selectedState,
@@ -165,7 +218,6 @@ const DummyHome = () => {
     status,
   ]);
 
-
   const { data: schools, isLoading: schoolLoading } = useQuery({
     queryKey: ["school", schoolPage, debouncedSearchTerm, sortByName],
     queryFn: () =>
@@ -177,6 +229,7 @@ const DummyHome = () => {
     keepPreviousData: true,
     staleTime: 1000 * 60 * 5,
   });
+
   const handleClearAll = () => {
     setSelectedPosition("");
     setPersonalPiScore("");
@@ -187,8 +240,12 @@ const DummyHome = () => {
     setSelectedSchool(null);
     setSchoolPage(1);
     setSearch("");
-    setStatus(null);
+    setStatus("active");
     setPage(1);
+    setItemsPerPage(10);
+    setSearchTerm("");
+    setSortByName(false);
+    dispatch(resetFilters());
   };
 
   useEffect(() => {
@@ -196,6 +253,10 @@ const DummyHome = () => {
       setCities(citiesData[selectedState] || []);
     } else {
       setCities([]);
+    }
+    if (isStateMount.current) {
+      isStateMount.current = false;
+      return;
     }
     setSelectedCity("");
   }, [selectedState]);
@@ -263,11 +324,11 @@ const DummyHome = () => {
                 </button>
               )}
             </div>
-            <div className="hidden sm:block">
+            {/* <div className="hidden sm:block">
               <p className="cursor-pointer text-[#0085CA] font-medium">
                 Advanced Filters
               </p>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Side Header Buttons and Account */}
@@ -357,6 +418,8 @@ const DummyHome = () => {
               pagination={data?.pagination}
               loading={isLoading}
               setPage={setPage}
+              itemsPerPage={itemsPerPage}
+              setItemsPerPage={setItemsPerPage}
             />
           </div>
 
