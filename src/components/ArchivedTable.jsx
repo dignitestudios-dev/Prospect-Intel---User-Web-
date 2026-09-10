@@ -62,18 +62,16 @@ const ArchivedTable = ({
         title={`Sort by ${label}`}
       >
         <span
-          className={`font-bold text-[12px] xl:text-[13px] tracking-wide transition-colors truncate ${
-            isSorted ? "text-blue-600" : "text-gray-700 group-hover:text-blue-600"
-          }`}
+          className={`font-bold text-[12px] xl:text-[13px] tracking-wide transition-colors truncate ${isSorted ? "text-blue-600" : "text-gray-700 group-hover:text-blue-600"
+            }`}
         >
           {label}
         </span>
         <span
-          className={`flex items-center justify-center flex-shrink-0 transition-colors ${
-            isSorted
+          className={`flex items-center justify-center flex-shrink-0 transition-colors ${isSorted
               ? "text-blue-600 bg-blue-100 rounded px-0.5 py-0.5"
               : "text-gray-400 group-hover:text-blue-500"
-          }`}
+            }`}
         >
           {isSorted ? (
             sortOrder === "asc" ? (
@@ -114,190 +112,192 @@ const ArchivedTable = ({
       {/* Desktop Table */}
       <div className="hidden md:block">
         <div className="overflow-hidden">
-        <table className="w-full text-left border-collapse table-fixed">
-          <thead>
-            <tr className="text-gray-700 font-bold bg-white/70 border-2 border-white text-[12px] xl:text-[13px] capitalize shadow-xs">
-              <th className="p-2.5 rounded-l-xl w-[38px] text-center">
-                <input
-                  type="checkbox"
-                  checked={players?.length > 0 && selectedIds.length === players?.length}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedIds(players?.map((a) => a._id));
-                    } else {
-                      setSelectedIds([]);
-                    }
-                  }}
-                  className="w-4 h-4 rounded text-blue-600 bg-white border-2 border-gray-300 checked:bg-blue-600 checked:border-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                />
-              </th>
-              <th className="p-2.5 w-[15%]">
-                <SortHeader label="Player" sortKey="Player" />
-              </th>
-              <th className="p-2.5 w-[7%]">
-                <SortHeader label="Grad" sortKey="Grad" />
-              </th>
-              <th className="p-2.5 w-[11%]">
-                <SortHeader label="Position" sortKey="Position" />
-              </th>
-              <th className="p-2.5 w-[13%]">
-                <div className="flex items-center gap-1">
-                  <SortHeader label="Football" sortKey="Football Character" />
-                  <span className="text-gray-400 font-normal">/</span>
-                  <SortHeader label="Personal" sortKey="Personal Character" />
-                </div>
-              </th>
-              <th className="p-2.5 w-[5%] text-center">
-                <SortHeader label="H" sortKey="Height" className="justify-center" />
-              </th>
-              <th className="p-2.5 w-[5%] text-center">
-                <SortHeader label="W" sortKey="Width" className="justify-center" />
-              </th>
-              <th className="p-2.5 w-[14%]">
-                <SortHeader label="High School" sortKey="High School" />
-              </th>
-              <th className="p-2.5 w-[11%]">
-                <SortHeader label="State" sortKey="State" />
-              </th>
-              <th className="p-2.5 rounded-r-xl w-[16%]">
-                <SortHeader label="Committed College" sortKey="Committed College" />
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
-              <TableSkeleton rows={5} />
-            ) : players?.length === 0 ? (
-              <tr>
-                <td colSpan="10" className="text-center p-10 text-[14px] text-gray-400">
-                  Athlete Not Found
-                </td>
+          <table className="w-full text-left border-collapse table-fixed">
+            <thead>
+              <tr className="text-gray-700 font-bold bg-white/70 border-2 border-white text-[12px] xl:text-[13px] capitalize shadow-xs">
+                <th className="p-2.5 rounded-l-xl w-[38px] text-center">
+                  <input
+                    type="checkbox"
+                    checked={players?.length > 0 && selectedIds.length === players?.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds(players?.map((a) => a._id));
+                      } else {
+                        setSelectedIds([]);
+                      }
+                    }}
+                    className="w-4 h-4 rounded text-blue-600 bg-white border-2 border-gray-300 checked:bg-blue-600 checked:border-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  />
+                </th>
+                <th className="p-2.5 w-[15%]">
+                  <SortHeader label="Player" sortKey="Player" />
+                </th>
+                <th className="p-2.5 w-[7%]">
+                  <SortHeader label="Grad" sortKey="Grad" />
+                </th>
+                <th className="p-2.5 w-[11%]">
+                  <SortHeader label="Position" sortKey="Position" />
+                </th>
+                <th className="p-2.5 w-[13%]">
+                  <div className="flex items-center gap-1">
+                    {/* <SortHeader label="Football" sortKey="Football Character" />
+                   */}
+                    Football
+                    <span className="text-gray-400 font-normal">/</span>
+                    <SortHeader label="Personal" sortKey="Personal Character" />
+                  </div>
+                </th>
+                <th className="p-2.5 w-[5%] text-center">
+                  <SortHeader label="H" sortKey="Height" className="justify-center" />
+                </th>
+                <th className="p-2.5 w-[5%] text-center">
+                  <SortHeader label="W" sortKey="Width" className="justify-center" />
+                </th>
+                <th className="p-2.5 w-[14%]">
+                  <SortHeader label="High School" sortKey="High School" />
+                </th>
+                <th className="p-2.5 w-[11%]">
+                  <SortHeader label="State" sortKey="State" />
+                </th>
+                <th className="p-2.5 rounded-r-xl w-[16%]">
+                  <SortHeader label="Committed College" sortKey="Committed College" />
+                </th>
               </tr>
-            ) : (
-              players?.map((p, i) => (
-                <tr
-                  key={p?._id || i}
-                  onClick={() => {
-                    dispatch(
-                      logActivity({
-                        title: "Opened Player Profile",
-                        description: "Opened Player Profile",
-                        metaData: {
-                          type: "ProfileView",
-                          athleteImg: p.basicInfo?.image,
-                          athleteName: p?.basicInfo?.name,
-                        },
-                      }),
-                    );
-                    queryClient.invalidateQueries(["athlete", p?._id]);
-                    navigate(`/app/profile/${p?._id}`);
-                  }}
-                  className="cursor-pointer border-b border-gray-200/50 hover:bg-white/40 transition-colors"
-                >
-                  <td className="p-2.5 text-center" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      checked={selectedIds.includes(p?._id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedIds((prev) => [...prev, p?._id]);
-                        } else {
-                          setSelectedIds((prev) =>
-                            prev.filter((id) => id !== p?._id),
-                          );
-                        }
-                      }}
-                      type="checkbox"
-                      className="w-4 h-4 text-blue-600 rounded cursor-pointer border-gray-300 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="p-2.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <img
-                        src={p.basicInfo?.image || Emptyimg}
-                        alt={p.basicInfo?.name}
-                        className="w-7 h-7 rounded-full border border-gray-200 flex-shrink-0 object-cover"
-                      />
-                      <span
-                        title={p.basicInfo?.name}
-                        className="font-medium text-gray-800 text-[13px] truncate block min-w-0"
-                      >
-                        {p.basicInfo?.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td
-                    title={p.basicInfo?.gradYear}
-                    className="p-2.5 text-gray-700 text-[13px] font-medium truncate"
-                  >
-                    {p.basicInfo?.gradYear || "N/A"}
-                  </td>
-                  <td
-                    title={p.basicInfo?.position}
-                    className="p-2.5 text-gray-700 text-[13px] truncate"
-                  >
-                    {p.basicInfo?.position || "N/A"}
-                  </td>
-                  <td className="p-2.5">
-                    <div className="flex gap-1.5 items-center">
-                      <span
-                        className={`flex items-center justify-center border-2 ${getGradeColor(p.athlete?.footballPiScore)} text-white rounded-lg font-bold text-[12px] px-1.5 py-0.5 min-w-[2.2rem] shadow-2xs`}
-                        title={`Football Character: ${p.athlete?.footballPiScore || "--"}`}
-                      >
-                        {p.athlete?.footballPiScore || "--"}
-                      </span>
-                      <span
-                        className={`flex items-center justify-center border-2 ${getGradeColor(p.athlete?.personalPiScore)} text-white rounded-lg font-bold text-[12px] px-1.5 py-0.5 min-w-[2.2rem] shadow-2xs`}
-                        title={`Personal Character: ${p.athlete?.personalPiScore || "--"}`}
-                      >
-                        {p.athlete?.personalPiScore || "--"}
-                      </span>
-                    </div>
-                  </td>
-                  <td
-                    title={p.basicInfo?.height}
-                    className="p-2.5 text-center text-gray-700 text-[13px] truncate"
-                  >
-                    {p.basicInfo?.height || "N/A"}
-                  </td>
-                  <td
-                    title={p.basicInfo?.weight}
-                    className="p-2.5 text-center text-gray-700 text-[13px] truncate"
-                  >
-                    {p.basicInfo?.weight || "N/A"}
-                  </td>
-                  <td
-                    title={p.basicInfo?.schoolName}
-                    className="p-2.5 text-gray-700 text-[13px] truncate"
-                  >
-                    {p.basicInfo?.schoolName || "N/A"}
-                  </td>
-                  <td
-                    title={p.basicInfo?.state}
-                    className="p-2.5 text-gray-700 text-[13px] truncate"
-                  >
-                    {p.basicInfo?.state || "N/A"}
-                  </td>
-                  <td className="p-2.5">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <img
-                        src={p.basicInfo?.committedCollege?.logo || Emptyimg}
-                        alt="College Logo"
-                        className="w-[22px] h-[22px] object-contain flex-shrink-0"
-                      />
-                      <span
-                        title={p.basicInfo?.committedCollege?.name}
-                        className="text-[13px] text-gray-700 truncate font-medium block min-w-0"
-                      >
-                        {p.basicInfo?.committedCollege?.name || "N/A"}
-                      </span>
-                    </div>
+            </thead>
+
+            <tbody>
+              {loading ? (
+                <TableSkeleton rows={5} />
+              ) : players?.length === 0 ? (
+                <tr>
+                  <td colSpan="10" className="text-center p-10 text-[14px] text-gray-400">
+                    Athlete Not Found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                players?.map((p, i) => (
+                  <tr
+                    key={p?._id || i}
+                    onClick={() => {
+                      dispatch(
+                        logActivity({
+                          title: "Opened Player Profile",
+                          description: "Opened Player Profile",
+                          metaData: {
+                            type: "ProfileView",
+                            athleteImg: p.basicInfo?.image,
+                            athleteName: p?.basicInfo?.name,
+                          },
+                        }),
+                      );
+                      queryClient.invalidateQueries(["athlete", p?._id]);
+                      navigate(`/app/profile/${p?._id}`);
+                    }}
+                    className="cursor-pointer border-b border-gray-200/50 hover:bg-white/40 transition-colors"
+                  >
+                    <td className="p-2.5 text-center" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        checked={selectedIds.includes(p?._id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedIds((prev) => [...prev, p?._id]);
+                          } else {
+                            setSelectedIds((prev) =>
+                              prev.filter((id) => id !== p?._id),
+                            );
+                          }
+                        }}
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 rounded cursor-pointer border-gray-300 focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="p-2.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <img
+                          src={p.basicInfo?.image || Emptyimg}
+                          alt={p.basicInfo?.name}
+                          className="w-7 h-7 rounded-full border border-gray-200 flex-shrink-0 object-cover"
+                        />
+                        <span
+                          title={p.basicInfo?.name}
+                          className="font-medium text-gray-800 text-[13px] truncate block min-w-0"
+                        >
+                          {p.basicInfo?.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td
+                      title={p.basicInfo?.gradYear}
+                      className="p-2.5 text-gray-700 text-[13px] font-medium truncate"
+                    >
+                      {p.basicInfo?.gradYear || "N/A"}
+                    </td>
+                    <td
+                      title={p.basicInfo?.position}
+                      className="p-2.5 text-gray-700 text-[13px] truncate"
+                    >
+                      {p.basicInfo?.position || "N/A"}
+                    </td>
+                    <td className="p-2.5">
+                      <div className="flex gap-1.5 items-center">
+                        <span
+                          className={`flex items-center justify-center border-2 ${getGradeColor(p.athlete?.footballPiScore)} text-white rounded-lg font-bold text-[12px] px-1.5 py-0.5 min-w-[2.2rem] shadow-2xs`}
+                          title={`Football Character: ${p.athlete?.footballPiScore || "--"}`}
+                        >
+                          {p.athlete?.footballPiScore || "--"}
+                        </span>
+                        <span
+                          className={`flex items-center justify-center border-2 ${getGradeColor(p.athlete?.personalPiScore)} text-white rounded-lg font-bold text-[12px] px-1.5 py-0.5 min-w-[2.2rem] shadow-2xs`}
+                          title={`Personal Character: ${p.athlete?.personalPiScore || "--"}`}
+                        >
+                          {p.athlete?.personalPiScore || "--"}
+                        </span>
+                      </div>
+                    </td>
+                    <td
+                      title={p.basicInfo?.height}
+                      className="p-2.5 text-center text-gray-700 text-[13px] truncate"
+                    >
+                      {p.basicInfo?.height || "N/A"}
+                    </td>
+                    <td
+                      title={p.basicInfo?.weight}
+                      className="p-2.5 text-center text-gray-700 text-[13px] truncate"
+                    >
+                      {p.basicInfo?.weight || "N/A"}
+                    </td>
+                    <td
+                      title={p.basicInfo?.schoolName}
+                      className="p-2.5 text-gray-700 text-[13px] truncate"
+                    >
+                      {p.basicInfo?.schoolName || "N/A"}
+                    </td>
+                    <td
+                      title={p.basicInfo?.state}
+                      className="p-2.5 text-gray-700 text-[13px] truncate"
+                    >
+                      {p.basicInfo?.state || "N/A"}
+                    </td>
+                    <td className="p-2.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <img
+                          src={p.basicInfo?.committedCollege?.logo || Emptyimg}
+                          alt="College Logo"
+                          className="w-[22px] h-[22px] object-contain flex-shrink-0"
+                        />
+                        <span
+                          title={p.basicInfo?.committedCollege?.name}
+                          className="text-[13px] text-gray-700 truncate font-medium block min-w-0"
+                        >
+                          {p.basicInfo?.committedCollege?.name || "N/A"}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
         {!loading && players?.length > 0 && (
@@ -412,11 +412,10 @@ const ArchivedTable = ({
                 >
                   <Heart
                     size={18}
-                    className={`transition-colors ${
-                      p.isSaved
+                    className={`transition-colors ${p.isSaved
                         ? "fill-red-500 text-red-500"
                         : "text-gray-400 hover:text-red-500"
-                    }`}
+                      }`}
                   />
                 </button>
               </div>

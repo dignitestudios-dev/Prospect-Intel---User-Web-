@@ -470,7 +470,7 @@ const DummyHome = () => {
                 <h3 className="text-lg font-bold text-gray-800">
                   {data?.data?.length || 0} Results
                 </h3>
-                {sortBy && (
+                {/* {sortBy && (
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-medium">
                     <span>
                       Sorted: <strong>{sortBy}</strong> ({sortOrder.toUpperCase()})
@@ -488,7 +488,7 @@ const DummyHome = () => {
                       <X size={13} />
                     </button>
                   </div>
-                )}
+                )} */}
               </div>
 
               <button

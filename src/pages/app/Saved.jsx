@@ -288,7 +288,7 @@ const Saved = () => {
               <h3 className="text-lg font-bold text-gray-800">
                 {totalResults} Results
               </h3>
-              {sortBy && (
+              {/* {sortBy && (
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-medium">
                   <span>
                     Sorted: <strong>{sortBy}</strong> ({sortOrder.toUpperCase()})
@@ -302,7 +302,7 @@ const Saved = () => {
                     <X size={13} />
                   </button>
                 </div>
-              )}
+              )} */}
             </div>
 
             <div className="flex items-center gap-3">
@@ -386,7 +386,8 @@ const Saved = () => {
                     </th>
                     <th className="p-2.5 w-[13%]">
                       <div className="flex items-center gap-1">
-                        <SortHeader label="Football" sortKey="Football Character" />
+                        {/* <SortHeader label="Football" sortKey="Football Character" /> */}
+                        Football
                         <span className="text-gray-400 font-normal">/</span>
                         <SortHeader label="Personal" sortKey="Personal Character" />
                       </div>
