@@ -3,9 +3,9 @@ import { ErrorToast } from "./components/global/Toaster";
 import Cookies from "js-cookie";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 // for local
-export const baseUrl = "https://dev.api.prospectintelhq.com/api";
+// export const baseUrl = "https://dev.api.prospectintelhq.com/api";
 // for Vercel
-// export const baseUrl = "https://staging.api.prospectintelhq.com/api";
+export const baseUrl = "https://staging.api.prospectintelhq.com/api";
 
 // Device fingerprint
 let deviceFingerprint = "";
