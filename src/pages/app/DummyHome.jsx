@@ -11,7 +11,7 @@ import useDebounce, { useAppDispatch, useAppSelector } from "../../lib/store/hoo
 import { setFilters, resetFilters } from "../../lib/store/feature/filterSlice";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import axiosinstance from "../../axios";
-import { RefreshCcw } from "lucide-react";
+import { RefreshCcw, Heart, X } from "lucide-react";
 
 const positions = [
   { label: "QB", value: "Quarterback" },
@@ -98,6 +98,10 @@ const DummyHome = () => {
   const [sortByName, setSortByName] = useState(savedFilters?.sortByName || false);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
+  const [sortBy, setSortBy] = useState(savedFilters?.sortBy || "");
+  const [sortOrder, setSortOrder] = useState(savedFilters?.sortOrder || "asc");
+  const [bulkLoading, setBulkLoading] = useState(false);
+
   const isFirstMount = useRef(true);
   const isStateMount = useRef(true);
 
@@ -119,6 +123,8 @@ const DummyHome = () => {
         status,
         searchTerm,
         sortByName,
+        sortBy,
+        sortOrder,
       })
     );
   }, [
@@ -136,6 +142,8 @@ const DummyHome = () => {
     status,
     searchTerm,
     sortByName,
+    sortBy,
+    sortOrder,
     dispatch,
   ]);
 
@@ -144,7 +152,7 @@ const DummyHome = () => {
       "athlete",
       page,
       itemsPerPage,
-      search,
+      debouncedSearch,
       selectedPosition,
       personalPiScore,
       footballPiScore,
@@ -153,6 +161,8 @@ const DummyHome = () => {
       status,
       selectedCity,
       selectedState,
+      sortBy,
+      sortOrder,
     ],
     queryFn: () =>
       getAthlete({
@@ -167,10 +177,56 @@ const DummyHome = () => {
         isActive,
         selectedCity,
         selectedState,
+        sortBy,
+        sortOrder,
       }),
     keepPreviousData: true,
     staleTime: 1000 * 60 * 5,
   });
+
+  const handleSort = (columnKey) => {
+    if (sortBy === columnKey) {
+      if (sortOrder === "asc") {
+        setSortOrder("desc");
+      } else {
+        // 3rd click resets sorting
+        setSortBy("");
+        setSortOrder("asc");
+      }
+    } else {
+      setSortBy(columnKey);
+      setSortOrder("asc");
+    }
+    setPage(1);
+  };
+
+  const handleBulkSave = async () => {
+    if (!selectedIds || selectedIds.length === 0) {
+      ErrorToast("Please select at least one athlete");
+      return;
+    }
+    setBulkLoading(true);
+    try {
+      const res = await axiosinstance.post("/user/athlete/save/bulk", {
+        athleteIds: selectedIds,
+        action: "save",
+      });
+      if (res.status === 200 || res.status === 201) {
+        SuccessToast(res.data?.message || "Athletes saved successfully!");
+        setSelectedIds([]);
+        queryClient.invalidateQueries({ queryKey: ["athlete"] });
+        queryClient.invalidateQueries({ queryKey: ["atheletesave"] });
+      }
+    } catch (err) {
+      ErrorToast(
+        err?.response?.data?.message ||
+        err?.response?.data?.messsage ||
+        "Failed to save athletes"
+      );
+    } finally {
+      setBulkLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (isFirstMount.current) {
@@ -245,6 +301,8 @@ const DummyHome = () => {
     setItemsPerPage(10);
     setSearchTerm("");
     setSortByName(false);
+    setSortBy("");
+    setSortOrder("asc");
     dispatch(resetFilters());
   };
 
@@ -396,10 +454,64 @@ const DummyHome = () => {
         {/* Main Content Area: Table and Filters */}
         <div className="flex flex-col xl:flex-row">
           {/* Left Side: Table & Results */}
-          <div className="flex-grow p-6 pt-4 border-2 border-r-0 xl:border-r border-gray-100 w-full xl:max-w-[calc(100%-300px)]">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">
-              {data?.data?.length} Results
-            </h3>
+          <div className="flex-grow min-w-0 p-6 pt-4 border-2 border-r-0 xl:border-r border-gray-100 w-full xl:max-w-[calc(100%-300px)]">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-bold text-gray-800">
+                  {data?.data?.length || 0} Results
+                </h3>
+                {sortBy && (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-medium">
+                    <span>
+                      Sorted: <strong>{sortBy}</strong> ({sortOrder.toUpperCase()})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSortBy("");
+                        setSortOrder("asc");
+                        setPage(1);
+                      }}
+                      className="hover:bg-blue-200 rounded p-0.5 transition-colors cursor-pointer text-blue-700"
+                      title="Clear sorting"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={handleBulkSave}
+                disabled={bulkLoading || selectedIds.length === 0}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm border ${
+                  selectedIds.length > 0
+                    ? "bg-[#0085CA] hover:bg-blue-600 text-white border-transparent shadow-blue-300 cursor-pointer"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 opacity-80 cursor-not-allowed"
+                }`}
+                title={
+                  selectedIds.length > 0
+                    ? `Save ${selectedIds.length} selected athlete(s)`
+                    : "Select athletes using checkboxes to Mass Favorite"
+                }
+              >
+                <Heart
+                  size={17}
+                  className={
+                    selectedIds.length > 0
+                      ? "fill-white text-white"
+                      : "text-red-500 fill-red-100"
+                  }
+                />
+                <span className={selectedIds.length > 0 ? "text-white" : "text-gray-700"}>
+                  {bulkLoading
+                    ? "Saving..."
+                    : selectedIds.length > 0
+                    ? `Mass Favorite (${selectedIds.length})`
+                    : "Mass Favorite"}
+                </span>
+              </button>
+            </div>
 
             <ArchivedTable
               selectedIds={selectedIds}
@@ -410,6 +522,9 @@ const DummyHome = () => {
               setPage={setPage}
               itemsPerPage={itemsPerPage}
               setItemsPerPage={setItemsPerPage}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
             />
           </div>
 

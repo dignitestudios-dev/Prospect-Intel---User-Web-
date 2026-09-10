@@ -12,10 +12,17 @@ export const getAthlete = async ({
   isActive,
   selectedCity,
   selectedState,
+  sortBy,
+  sortOrder,
 }) => {
-  const res = await axiosinstance.get(
-    `/athlete/user/list?page=${page}&limit=${itemsPerPage}&search=${search}&position=${selectedPosition}&personalPiScore=${personalPiScore}&footballPiScore=${footballPiScore}&school=${SchoolId}&gradYear=${selectedGradeYear}&active=${isActive}&state=${selectedState}&city=${selectedCity}`,
-  );
+  let url = `/athlete/user/list?page=${page}&limit=${itemsPerPage}&search=${search}&position=${selectedPosition}&personalPiScore=${personalPiScore}&footballPiScore=${footballPiScore}&school=${SchoolId}&gradYear=${selectedGradeYear}&active=${isActive}&state=${selectedState}&city=${selectedCity}`;
+  if (sortBy) {
+    url += `&sortBy=${encodeURIComponent(sortBy)}`;
+  }
+  if (sortOrder) {
+    url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
+  }
+  const res = await axiosinstance.get(url);
   return res.data;
 };
 export const getSchool = async ({
@@ -38,9 +45,25 @@ export const getAtheleteById = async (id) => {
   const res = await axiosinstance.get(`/athlete/${id}`);
   return res.data.data;
 };
-export const getAtheleteSave = async () => {
-  const res = await axiosinstance.get(`/user/athlete/save`);
-  return res.data.data;
+export const getAtheleteSave = async ({
+  page = 1,
+  itemsPerPage = 10,
+  search = "",
+  sortBy,
+  sortOrder,
+} = {}) => {
+  let url = `/user/athlete/save?page=${page}&limit=${itemsPerPage}`;
+  if (search) {
+    url += `&search=${encodeURIComponent(search)}`;
+  }
+  if (sortBy) {
+    url += `&sortBy=${encodeURIComponent(sortBy)}`;
+  }
+  if (sortOrder) {
+    url += `&sortOrder=${encodeURIComponent(sortOrder)}`;
+  }
+  const res = await axiosinstance.get(url);
+  return res.data;
 };
 export const getProfile = async () => {
   const res = await axiosinstance.get(`/user/me`);
