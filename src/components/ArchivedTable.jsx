@@ -140,9 +140,9 @@ const ArchivedTable = ({
                 </th>
                 <th className="p-2.5 w-[13%]">
                   <div className="flex items-center gap-1">
-                    {/* <SortHeader label="Football" sortKey="Football Character" />
-                   */}
-                    Football
+                    <SortHeader label="Football" sortKey="Football Character" />
+                  
+                    {/* Football */}
                     <span className="text-gray-400 font-normal">/</span>
                     <SortHeader label="Personal" sortKey="Personal Character" />
                   </div>
