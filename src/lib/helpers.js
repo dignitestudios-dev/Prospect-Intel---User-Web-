@@ -644,7 +644,8 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   };
 
   const calcCharTableH = (w, rows) => {
-    const pad = 6;
+    const pad = 8;
+    const titleH = 26;
     const fontSize = 8.5;
     doc.setFontSize(fontSize);
     const bodyW = w - pad * 2;
@@ -652,102 +653,118 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       const lines = doc.splitTextToSize(val(row.value), bodyW);
       return Math.max(18, lines.length * 11 + 12);
     });
-    return 26 + rowHeights.reduce((a, b) => a + b, 0);
+    return titleH + rowHeights.reduce((a, b) => a + b, 0);
   };
 
   const drawCharTable = (x, y, w, title, rows) => {
     const titleH = 26;
     const pad = 8;
     const fontSize = 8.5;
+    const lineHeight = 11;
+
+    const row = rows[0] || {};
+    const textVal = val(row?.value);
+    const piScore = row?.piValue;
 
     doc.setFontSize(fontSize);
     const bodyW = w - pad * 2;
+    const lines = doc.splitTextToSize(textVal, bodyW);
 
-    const rowHeights = rows.map((row) => {
-      const lines = doc.splitTextToSize(val(row.value), bodyW);
-      return Math.max(18, lines.length * 11 + 12);
-    });
-    const totalH = titleH + rowHeights.reduce((a, b) => a + b, 0);
-
-    // ── Outer border ──
-    strokeRect(x, y, w, totalH, MGRAY, 0.5);
-
-    // ── Title row background ──
-    fillRect(x, y, w, titleH, WHITE);
-    doc.setDrawColor(...MGRAY);
-    doc.line(x, y + titleH, x + w, y + titleH);
-
-    // ── Title text ──
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...BLACK);
-    doc.text(title, x + pad, y + titleH - 7);
-
-    // ── PI Score badge (flex-end, vertically centered in title row) ──
-    const piScore = rows[0]?.piValue;
-    if (piScore) {
-      const colors = getPiScoreColors(piScore);
-
-      const badgePadX = 6;
-      const badgePadY = 3;
-      const labelText = "PI Score";
-      const scoreText = String(piScore);
+    const drawTitleRow = (currY, isContinuation = false) => {
+      fillRect(x, currY, w, titleH, WHITE);
+      doc.setDrawColor(...MGRAY);
+      doc.setLineWidth(0.5);
+      doc.line(x, currY + titleH, x + w, currY + titleH);
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      const labelW = doc.getTextWidth(labelText);
-
       doc.setFontSize(11);
-      const scoreW = doc.getTextWidth(scoreText);
-
-      const innerGap = 5;
-      const badgeW = badgePadX * 2 + labelW + innerGap + scoreW;
-      const badgeH = 18;
-      const badgeX = x + w - badgeW - pad;
-      const badgeY = y + (titleH - badgeH) / 2;
-
-      // Badge background
-      doc.setFillColor(...colors.bg);
-      doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 3, 3, "F");
-
-      // "PI Score" small label
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      doc.setTextColor(...colors.text);
-      doc.text(labelText, badgeX + badgePadX, badgeY + badgeH - 5);
-
-      // Score value larger
-      doc.setFontSize(11);
+      doc.setTextColor(...BLACK);
       doc.text(
-        scoreText,
-        badgeX + badgePadX + labelW + innerGap,
-        badgeY + badgeH - 4,
+        isContinuation ? `${title} (Cont.)` : title,
+        x + pad,
+        currY + titleH - 7,
       );
-    }
 
-    // ── Body rows ──
-    let ry = y + titleH;
-    rows.forEach((row, i) => {
-      const rh = rowHeights[i];
-      if (i % 2 === 1) fillRect(x, ry, w, rh, LGRAY);
+      if (!isContinuation && piScore) {
+        const colors = getPiScoreColors(piScore);
+        const badgePadX = 6;
+        const labelText = "PI Score";
+        const scoreText = String(piScore);
 
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(6.5);
+        const labelW = doc.getTextWidth(labelText);
+
+        doc.setFontSize(11);
+        const scoreW = doc.getTextWidth(scoreText);
+
+        const innerGap = 5;
+        const badgeW = badgePadX * 2 + labelW + innerGap + scoreW;
+        const badgeH = 18;
+        const badgeX = x + w - badgeW - pad;
+        const badgeY = currY + (titleH - badgeH) / 2;
+
+        doc.setFillColor(...colors.bg);
+        doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 3, 3, "F");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(6.5);
+        doc.setTextColor(...colors.text);
+        doc.text(labelText, badgeX + badgePadX, badgeY + badgeH - 5);
+
+        doc.setFontSize(11);
+        doc.text(
+          scoreText,
+          badgeX + badgePadX + labelW + innerGap,
+          badgeY + badgeH - 4,
+        );
+      }
+    };
+
+    let startLineIdx = 0;
+    let currY = y;
+    let isFirst = true;
+
+    while (startLineIdx < lines.length || isFirst) {
+      if (!isFirst) {
+        doc.addPage();
+        addPageHeader();
+        currY = HEADER_H + 12;
+      }
+
+      const availableBodyH = PH - FOOTER_H - M - (currY + titleH + 12);
+      const maxLines = Math.max(1, Math.floor(availableBodyH / lineHeight));
+      const chunkLines = lines.slice(startLineIdx, startLineIdx + maxLines);
+      const bodyH = Math.max(18, chunkLines.length * lineHeight + 12);
+      const sectionH = titleH + bodyH;
+
+      // Outer border
+      strokeRect(x, currY, w, sectionH, MGRAY, 0.5);
+
+      // Title row
+      drawTitleRow(currY, !isFirst);
+
+      // Body text
       doc.setFont("helvetica", "normal");
       doc.setFontSize(fontSize);
       doc.setTextColor(80, 80, 80);
+      doc.text(chunkLines, x + pad, currY + titleH + 12);
 
-      const lines = doc.splitTextToSize(val(row.value), bodyW);
-      doc.text(lines, x + pad, ry + 12);
+      currY += sectionH;
+      startLineIdx += chunkLines.length;
+      isFirst = false;
 
-      doc.setDrawColor(...MGRAY);
-      doc.line(x, ry + rh, x + w, ry + rh);
-      ry += rh;
-    });
+      if (startLineIdx >= lines.length) {
+        break;
+      }
+    }
 
-    return y + totalH;
+    return currY;
   };
 
-  // ── Football & Personal Character (side by side) ──────────────
-  const charW = (PW - M * 2 - 10) / 2;
+  // ── Football & Personal Character ────────────────────────────
+  const FULL_W = PW - M * 2;
+  const HALF_W = (PW - M * 2 - 10) / 2;
 
   const footballRows = [
     {
@@ -764,25 +781,12 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     },
   ];
 
-  // Use new calc function for accurate height
-  const charBlockH = Math.max(
-    calcCharTableH(charW, footballRows),
-    calcCharTableH(charW, personalRows),
+  const sideBySideH = Math.max(
+    calcCharTableH(HALF_W, footballRows),
+    calcCharTableH(HALF_W, personalRows),
   );
 
-  currentY = ensureSpace(currentY, charBlockH);
-
-  // Use new draw function
-  drawCharTable(M, currentY, charW, "Football Character", footballRows);
-  drawCharTable(
-    M + charW + 10,
-    currentY,
-    charW,
-    "Personal Character",
-    personalRows,
-  );
-
-  currentY += charBlockH + 16;
+  const remainingPage1H = PH - FOOTER_H - M - currentY;
 
   // ── Other Relevant Information ────────────────────────────────
   const otherRows = [
@@ -791,23 +795,73 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       value: athleteDetail?.athlete?.otherInfo,
     },
   ];
-  const otherH = calcExpandingTableH(PW - M * 2, otherRows, 120);
 
-  currentY = ensureSpace(currentY, otherH);
-  drawExpandingTable(
-    M,
-    currentY,
-    PW - M * 2,
-    "Other Relevant Information",
-    otherRows,
-    120,
-  );
+  if (sideBySideH <= remainingPage1H) {
+    // Both character cards fit on Page 1 side-by-side
+    drawCharTable(M, currentY, HALF_W, "Football Character", footballRows);
+    drawCharTable(
+      M + HALF_W + 10,
+      currentY,
+      HALF_W,
+      "Personal Character",
+      personalRows,
+    );
+    currentY += sideBySideH + 16;
 
-  // Page 1 footer
-  addPageFooter();
+    // Check if Other Relevant Information fits on Page 1 or moves to next page
+    const otherH = calcCharTableH(FULL_W, otherRows);
+    currentY = ensureSpace(currentY, otherH);
+    currentY = drawCharTable(
+      M,
+      currentY,
+      FULL_W,
+      "Other Relevant Information",
+      otherRows,
+    );
+  } else {
+    // Content overflows / goes over to next page:
+    // Football Character on its own page (full width)
+    doc.addPage();
+    addPageHeader();
+    currentY = HEADER_H + 12;
+
+    currentY = drawCharTable(
+      M,
+      currentY,
+      FULL_W,
+      "Football Character",
+      footballRows,
+    );
+
+    // Personal Character shifted to next page (full width)
+    doc.addPage();
+    addPageHeader();
+    currentY = HEADER_H + 12;
+
+    currentY = drawCharTable(
+      M,
+      currentY,
+      FULL_W,
+      "Personal Character",
+      personalRows,
+    );
+
+    // Other Relevant Information shifted to next page (full width)
+    doc.addPage();
+    addPageHeader();
+    currentY = HEADER_H + 12;
+
+    currentY = drawCharTable(
+      M,
+      currentY,
+      FULL_W,
+      "Other Relevant Information",
+      otherRows,
+    );
+  }
 
   // ════════════════════════════════════════════════════════════
-  // PAGE 2 — Overview & Grading Scale
+  // Overview & Grading Scale (Starts on a new page)
   // ════════════════════════════════════════════════════════════
   doc.addPage();
   addPageHeader();
@@ -1049,8 +1103,18 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     doc.text(dLines, tx + TILE_W / 2, ty + 60, { align: "center" });
   });
 
-  // Page 2 footer
-  addPageFooter();
+  // ── Stamp footer on all pages ───────────────────────────────
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, M, PH - 10);
+    doc.text("PROSPECT INTEL — CONFIDENTIAL", PW - M, PH - 10, {
+      align: "right",
+    });
+  }
 
   // ── Save ─────────────────────────────────────────────────────
   doc.save(`${athleteDetail?.basicInfo?.name || "Athlete_Profile"}.pdf`);
