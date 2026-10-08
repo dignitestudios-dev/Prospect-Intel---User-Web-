@@ -1,8 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
-import { FiLoader } from "react-icons/fi";
-import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
-import { prospectLogo } from "../../assets/export";
+import { Eye, EyeOff } from "lucide-react";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import { useFormik } from "formik";
 import { signInSchema } from "../../schema/authentication/LoginSchema";
@@ -11,6 +9,8 @@ import { useAppDispatch } from "../../lib/store/hook";
 import { login } from "../../lib/store/feature/authSlice";
 import { resetFilters } from "../../lib/store/feature/filterSlice";
 import { logActivity } from "../../lib/store/actions/activityActions";
+import { TextField } from "../../ui/Field";
+import Button from "../../ui/Button";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,135 +19,127 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
+  // The sign-in records where you logged in from. Never let that lookup hold up sign-in.
   const getUserLocation = async () => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
     try {
-      const res = await fetch("https://ipinfo.io/json");
+      const res = await fetch("https://ipinfo.io/json", { signal: controller.signal });
       const data = await res.json();
       return {
         city: data.city || "",
         state: data.region || "",
       };
-    } catch (err) {
+    } catch {
       return { city: "", state: "" };
+    } finally {
+      clearTimeout(timer);
     }
   };
 
-  const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
-    useFormik({
-      initialValues: { email: "", password: "" },
-      validationSchema: signInSchema,
-      onSubmit: async (values) => {
-        setLoading(true);
-        try {
-          const { city, state } = await getUserLocation();
+  const { values, handleBlur, handleChange, handleSubmit, errors, touched } = useFormik({
+    initialValues: { email: "", password: "" },
+    validationSchema: signInSchema,
+    onSubmit: async (values) => {
+      setLoading(true);
+      try {
+        const { city, state } = await getUserLocation();
 
-          const payload = {
-            email: values.email,
-            password: values.password,
-            role: "User",
-            city,
-            state,
-          };
+        const payload = {
+          email: values.email,
+          password: values.password,
+          role: "User",
+          city,
+          state,
+        };
 
-          const response = await axiosinstance.post("/user/login", payload);
+        const response = await axiosinstance.post("/user/login", payload);
 
-          if (response.status === 200) {
-            const data = response?.data?.data;
+        if (response.status === 200) {
+          const data = response?.data?.data;
 
-            dispatch(
-              login({
-                token: data?.token,
-                user: data?.user,
-              }),
-            );
-            dispatch(resetFilters());
-
-            dispatch(
-              logActivity({
-                title: "User Logged In",
-                description: "User Logged In",
-                metaData: { type: "Logged In", city, state },
-              }),
-            );
-
-            SuccessToast(response.data?.message || "Login Successful");
-            navigate("/app/dashboard", { replace: true });
-          }
-        } catch (error) {
-          ErrorToast(
-            error?.response?.data?.message || "Login failed. Try again.",
+          dispatch(
+            login({
+              token: data?.token,
+              user: data?.user,
+            }),
           );
-        } finally {
-          setLoading(false);
+          dispatch(resetFilters());
+
+          dispatch(
+            logActivity({
+              title: "User Logged In",
+              description: "User Logged In",
+              metaData: { type: "Logged In", city, state },
+            }),
+          );
+
+          SuccessToast(response.data?.message || "Login Successful");
+          try {
+            sessionStorage.setItem("pi_splash", "1"); // dashboard shows the loading animation once
+          } catch {
+            /* storage unavailable: skip the animation */
+          }
+          navigate("/app/dashboard", { replace: true });
         }
-      },
-    });
+      } catch (error) {
+        ErrorToast(error?.response?.data?.message || "We couldn't sign you in. Check your email and password.");
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
 
   return (
-    <div className="min-h-screen bg-[#EAEEF8] flex flex-col w-full">
-      <main className="flex-grow flex items-center justify-center">
-        <div className="w-full max-w-md flex flex-col items-center">
-          <div className="mb-8">
-            <img src={prospectLogo} alt="Logo" />
-          </div>
+    <div>
+      <h2 className="text-xl font-semibold text-ink">Sign in</h2>
+      <p className="mt-1.5 text-[13px] leading-relaxed text-ink-500">Enter the email and password for your Prospect Intel account.</p>
 
-          <div className="w-full rounded-xl">
-            <h2 className="text-2xl font-bold text-center mb-6">Log In</h2>
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate>
+        <TextField
+          size="lg"
+          label="Email"
+          type="email"
+          name="email"
+          inputMode="email"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
+          placeholder="you@program.edu"
+          value={values.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={errors.email && touched.email ? errors.email : ""}
+        />
 
-            <form className="flex flex-col gap-4 mx-2" onSubmit={handleSubmit}>
-              <div>
-                <input
-                  type="text"
-                  name="email"
-                  placeholder="Email"
-                  value={values.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className="w-full h-12 border rounded-lg px-4 text-lg tracking-widest"
-                />
-                {errors.email && touched.email && (
-                  <p className="text-red-500 text-sm">{errors.email}</p>
-                )}
-              </div>
+        <TextField
+          size="lg"
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          name="password"
+          autoComplete="current-password"
+          placeholder="Your password"
+          value={values.password}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={errors.password && touched.password ? errors.password : ""}
+          trailing={
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 hover:bg-ink-100 hover:text-ink"
+            >
+              {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+            </button>
+          }
+        />
 
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password"
-                  value={values.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className="w-full h-12 border rounded-lg px-4 text-lg tracking-widest"
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-4"
-                >
-                  {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
-                </button>
-
-                {errors.password && touched.password && (
-                  <p className="text-red-500 text-sm">{errors.password}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className="h-12 bg-blue-600 text-white rounded-lg flex justify-center items-center"
-                disabled={loading}
-              >
-                {loading ? <FiLoader className="animate-spin" /> : "Log In"}
-              </button>
-            </form>
-          </div>
-        </div>
-      </main>
+        <Button type="submit" variant="primary" size="lg" loading={loading} className="w-full">
+          {loading ? "Signing in" : "Sign in"}
+        </Button>
+      </form>
     </div>
   );
 };

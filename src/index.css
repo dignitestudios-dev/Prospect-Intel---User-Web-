@@ -2,46 +2,196 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
-/* src/index.css or src/styles.css */
-
-/* src/index.css or src/styles.css */
-
+/* ---------- Typeface: Matter (licensed, shipped in /public/font) ---------- */
 @font-face {
-  font-family: 'Mattar';
-  src: url('/fonts/Matter-Bold.otf') format('opentype');
+  font-family: "Matter";
+  src: url("/font/Matter-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Matter";
+  src: url("/font/Matter-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Matter";
+  src: url("/font/Matter-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Matter";
+  src: url("/font/Matter-Bold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
-/* @font-face {
-  font-family: 'Mattar';
-  src: url('/fonts/Matter-SemiBold.otf') format('opentype');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply font-sans text-sm text-ink antialiased;
+    /* Very long unbroken text (names, emails, notes) wraps instead of overflowing its card. */
+    overflow-wrap: anywhere;
+    /* Soft mesh backdrop: gives the frosted panels something to blur. */
+    background-color: #eef2f8;
+    background-image:
+      radial-gradient(900px 560px at 4% -6%, rgba(10, 124, 194, 0.34), transparent 64%),
+      radial-gradient(780px 560px at 100% 0%, rgba(99, 102, 241, 0.26), transparent 60%),
+      radial-gradient(860px 640px at 60% 108%, rgba(14, 165, 233, 0.30), transparent 62%),
+      radial-gradient(560px 460px at 0% 72%, rgba(45, 212, 191, 0.20), transparent 62%),
+      radial-gradient(520px 420px at 96% 66%, rgba(168, 85, 247, 0.14), transparent 62%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-semibold tracking-tight;
+  }
+  button,
+  [role="button"],
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-signal/70 ring-offset-1 ring-offset-white;
+  }
+  ::selection {
+    background: #cfe6f5;
+  }
 }
 
-@font-face {
-  font-family: 'Mattar';
-  src: url('/fonts/Matter-Medium.otf') format('opentype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
+@layer components {
+  /* Small label above a value: sentence case, quiet. */
+  .eyebrow {
+    @apply text-xs font-medium text-ink-500;
+  }
+  /* Frosted glass surfaces */
+  .glass {
+    background: rgba(255, 255, 255, 0.58);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.85),
+      0 8px 30px -14px rgba(15, 23, 42, 0.22);
+  }
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.82);
+    -webkit-backdrop-filter: blur(26px) saturate(170%);
+    backdrop-filter: blur(26px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 20px 50px -16px rgba(15, 23, 42, 0.35);
+  }
+  /* Floating menus: light, softly blurred, the page still reads through. */
+  .glass-menu {
+    background: rgba(255, 255, 255, 0.34);
+    -webkit-backdrop-filter: blur(10px) saturate(170%);
+    backdrop-filter: blur(10px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 24px 56px -18px rgba(15, 23, 42, 0.38);
+  }
+  .glass-dark {
+    background: rgba(15, 23, 42, 0.72);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.10),
+      0 18px 44px -14px rgba(2, 6, 23, 0.55);
+  }
+  .card {
+    @apply glass rounded-xl;
+  }
+  /* Without backdrop-filter support, fall back to near-opaque surfaces. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass,
+    .card {
+      background: rgba(255, 255, 255, 0.94);
+    }
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.98);
+    }
+    .glass-menu {
+      background: rgba(255, 255, 255, 0.96);
+    }
+    .glass-dark {
+      background: rgba(15, 23, 42, 0.94);
+    }
+  }
+  /* Same mesh as the page, so the splash feels like part of the app. */
+  .splash-bg {
+    background-color: #eef2f8;
+    background-image:
+      radial-gradient(900px 560px at 4% -6%, rgba(10, 124, 194, 0.34), transparent 64%),
+      radial-gradient(780px 560px at 100% 0%, rgba(99, 102, 241, 0.26), transparent 60%),
+      radial-gradient(860px 640px at 60% 108%, rgba(14, 165, 233, 0.30), transparent 62%),
+      radial-gradient(560px 460px at 0% 72%, rgba(45, 212, 191, 0.20), transparent 62%);
+  }
+  /* Column headings in dense tables */
+  .th {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-ink-500;
+  }
+  .scrollbar-hidden {
+    scrollbar-width: none;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-@font-face {
-  font-family: 'Mattar';
-  src: url('/fonts/Matter-Regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-} */
-
-/* Make sure to reset Tailwind's default font family */
+/* ---------- Scrollbars ---------- */
 * {
-  font-family: 'Jost', sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }
 
+/* ---------- Motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print: a clean profile page if a user prints instead of using Download PDF. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}

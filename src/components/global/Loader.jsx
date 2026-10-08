@@ -1,21 +1,17 @@
-import React from "react";
+import { Logo } from "../../assets/export";
+import Splash, { hasBooted } from "./Splash";
 
+/** Suspense fallback: the full brand splash on first load, a small loader after that. */
 const Loader = () => {
-    return (
-        <div className="fixed inset-0 flex items-center justify-center bg-white">
-            <div className="text-center">
-                <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-1">
-                    Loading
-                    <span className="animate-bounce [animation-delay:-0.3s]">.</span>
-                    <span className="animate-bounce [animation-delay:-0.15s]">.</span>
-                    <span className="animate-bounce">.</span>
-                </h2>
-                <p className="text-sm text-gray-500 mt-2">
-                    Please wait while we prepare your content
-                </p>
-            </div>
-        </div>
-    );
+  if (!hasBooted()) return <Splash />;
+  return (
+    <div role="status" aria-live="polite" className="fixed inset-0 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <img src={Logo} alt="" className="h-10 w-10 animate-pulse" />
+        <p className="text-xs font-medium text-ink-400">Loading</p>
+      </div>
+    </div>
+  );
 };
 
 export default Loader;

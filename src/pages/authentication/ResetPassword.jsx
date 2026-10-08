@@ -1,62 +1,43 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router"; // Use 'react-router-dom' for useNavigate
-import { FiLoader } from "react-icons/fi";
-import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
-// Assuming Logo is the dark 'PROSPECT INTEL' logo from the image
-import { Logo } from "../../assets/export"; 
-import axios from "../../axios"; 
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import { Eye, EyeOff } from "lucide-react";
+import axios from "../../axios";
 import Cookies from "js-cookie";
-import { ErrorToast } from "../../components/global/Toaster"; 
-import DummyNavbar from "../../components/layout/DummyNavbar";
-
-// The 'login' import seems unused in the logic, keeping it for completeness if needed elsewhere
-// import { login } from "../../assets/export"; 
+import { ErrorToast } from "../../components/global/Toaster";
+import { TextField } from "../../ui/Field";
+import Button from "../../ui/Button";
 
 const ResetPassword = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
-  // State for managing form fields and error messages
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); 
-  const [emailError, setEmailError] = useState(""); 
-  const [passwordError, setPasswordError] = useState(""); 
-
-  // Handle input changes
-  const handleEmailChange = (e) => setEmail(e.target.value);
-  const handlePasswordChange = (e) => setPassword(e.target.value);
-
-  // Handle password visibility toggle
+  const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const handleForgotClick = () => {
-    navigate("/auth/forgot-password");
-  };
-
-  // Keep original logic for navigating to dashboard (you can adjust this as needed)
-  const handleLoginClick = () => { 
+  const handleLoginClick = () => {
     navigate("/auth/login");
   };
 
-  // Original handleLogin function logic remains
   const handleLogin = async () => {
     setEmailError("");
     setPasswordError("");
 
     if (!email || !password) {
-      ErrorToast("Please enter both email and password.");
+      ErrorToast("Enter both your email and a new password.");
       return;
     }
 
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     if (!emailRegex.test(email)) {
-      setEmailError("Please enter a valid email address.");
+      setEmailError("Enter a valid email address.");
       return;
     }
 
     if (password.length < 8) {
-      setPasswordError("Password must be at least 8 characters long.");
+      setPasswordError("Use at least 8 characters.");
       return;
     }
 
@@ -70,137 +51,69 @@ const ResetPassword = () => {
         Cookies.set("user", JSON.stringify(response.data.data.admin));
         navigate("/app/dashboard");
       } else {
-        ErrorToast(response.data.message || "An unknown error occurred. Please try again.");
+        ErrorToast(response.data.message || "Something went wrong. Try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
-      ErrorToast("An error occurred. Please try again.");
+      ErrorToast("Something went wrong. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
-    // Outer container for the whole page with light blue/gray background
-    <div className="min-h-screen bg-[#EAEEF8] flex flex-col w-full">
-      
-      {/* 1. Header Bar */}
+    <div>
+      <h2 className="text-xl font-semibold text-ink">New password</h2>
+      <p className="mt-1.5 text-[13px] leading-relaxed text-ink-500">Choose a password with at least 8 characters.</p>
 
-      {/* <header className="w-full bg-white shadow-sm">
-        <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-          
-          <div className="flex-shrink-0">
-            <img 
-              src={Logo} 
-              alt="Prospect Intel Logo" 
-              className="h-8 w-auto" 
-            />
-          </div>
-          
-          <div className="flex space-x-4">
+      <form
+        className="mt-6 space-y-4"
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleLogin();
+        }}
+      >
+        <TextField
+          size="lg"
+          label="Email"
+          id="email"
+          name="email"
+          type="email"
+          inputMode="email"
+          autoComplete="username"
+          placeholder="you@program.edu"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          error={emailError}
+        />
+        <TextField
+          size="lg"
+          label="New password"
+          id="password"
+          name="password"
+          type={showPassword ? "text" : "password"}
+          autoComplete="new-password"
+          placeholder="At least 8 characters"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={passwordError}
+          trailing={
             <button
-              onClick={() => {  }}
-              className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-150"
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 hover:bg-ink-100 hover:text-ink"
             >
-              Contact Us
+              {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
             </button>
-            <button
-              onClick={() => {  }}
-              className="px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-lg shadow hover:bg-gray-900 transition duration-150"
-            >
-              Get Started
-            </button>
-          </div>
-        </div>
-      </header> */}
-
-      {/* 2. Main Content Area (Centered Login Form) */}
-      <main className="flex-grow flex items-center justify-center">
-        {/* Container for the centered content (Logo and Form) */}
-        <div className="w-full max-w-md flex flex-col items-center">
-          
-          {/* Large Centered Logo */}
-          {/* <div className="mb-8">
-            <img 
-              src={Logo} 
-              alt="Prospect Intel Logo Large" 
-              className="h-auto w-auto" 
-            />
-          </div> */}
-
-          {/* Login Form Wrapper */}
-          <div className="w-full rounded-xl">
-            
-            {/* Log In Title */}
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-              Enter New Password
-            </h2>
-
-            {/* Form */}
-            {/* The form structure below matches the desired look of inputs, 
-                replacing the old translucent/background-image style. */}
-            <form className="w-full flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
-
-              {/* Username/Email Input */}
-              <div className="w-full">
-                <input
-                  type="text"
-                  id="email"
-                  name="email"
-                  className="w-full h-12 text-gray-900 bg-white bg-opacity-25 p-4 pt-4 border-2 border-white rounded-lg placeholder:text-gray-500 px-4 text-base focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Username/Email"
-                  value={email}
-                  onChange={handleEmailChange}
-                />
-                {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
-              </div>
-
-              {/* Password Input with Toggle */}
-              <div className="w-full relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  className="w-full h-12 text-gray-900 bg-white bg-opacity-25 p-4 pt-4 border-2 border-white rounded-lg placeholder:text-gray-500 px-4 text-base focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-black hover:text-gray-700"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {/* Using FaRegEyeSlash for the 'eye with a slash' icon shown in the image */}
-                  {showPassword ? <FaRegEye /> : <FaRegEyeSlash />} 
-                </button>
-                {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
-              </div>
-
-              {/* Forgot Password Link (Styled to be smaller and centered) */}
-              
-              {/* Log In Button (Primary Blue) */}
-              <button
-                type="submit"
-                onClick={handleLoginClick} // You might want to use handleLogin for actual API call
-                className="w-full h-12 bg-[#0087C3] text-white flex gap-2 items-center justify-center text-base font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 disabled:bg-blue-400"
-                disabled={loading}
-              >
-                <span>Log In</span>
-                {loading && <FiLoader className="animate-spin text-lg" />}
-              </button>
-            </form>
-            
-            {/* Terms & Privacy Links */}
-          
-
-          </div> {/* End of Form Wrapper */}
-
-        </div> {/* End of Centered Content Container */}
-      </main>
-
+          }
+        />
+        <Button type="submit" variant="primary" size="lg" loading={loading} onClick={handleLoginClick} className="w-full">
+          Save and sign in
+        </Button>
+      </form>
     </div>
   );
 };

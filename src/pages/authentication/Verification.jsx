@@ -1,143 +1,139 @@
-import React, { useState } from "react"; 
-import { useNavigate } from "react-router"; 
-import { FiLoader } from "react-icons/fi"; 
-import { ErrorToast } from "../../components/global/Toaster"; 
-import { Logo } from "../../assets/export"; 
-import axios from "../../axios"; 
+import { useRef, useState } from "react";
+import { useNavigate } from "react-router";
+import { ErrorToast } from "../../components/global/Toaster";
+import axios from "../../axios";
+import Button from "../../ui/Button";
 
 const Verification = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const inputs = useRef([]);
 
-  // State to store the OTP as an array of 4 digits
+  // The 4-digit code, one box per digit
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [loading, setLoading] = useState(false); 
-  const [otpError, setOtpError] = useState(""); 
+  const [loading, setLoading] = useState(false);
+  const [otpError, setOtpError] = useState("");
 
-  // Handle OTP input change
+  const focusBox = (i) => inputs.current[i]?.focus();
+
   const handleOtpChange = (e, index) => {
     const value = e.target.value;
-    if (/^\d$/.test(value) || value === "") { // Only allow single digit or empty
+    if (/^\d$/.test(value) || value === "") {
       const newOtp = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
-
-      // Move focus to next input when current one is filled
-      if (value && index < 3) {
-        document.getElementById(`otp-${index + 1}`).focus();
-      }
+      if (value && index < 3) focusBox(index + 1);
     }
   };
 
-  // Handle focus on previous input when backspace is pressed
   const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index]) {
-      if (index > 0) {
-        document.getElementById(`otp-${index - 1}`).focus();
-      }
-    }
+    if (e.key === "Backspace" && !otp[index] && index > 0) focusBox(index - 1);
   };
 
-  // Handle OTP verification (replace with actual API call)
+  // Pasting a full code fills every box
+  const handlePaste = (e) => {
+    const digits = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4).split("");
+    if (digits.length === 0) return;
+    e.preventDefault();
+    const next = ["", "", "", ""];
+    digits.forEach((d, i) => (next[i] = d));
+    setOtp(next);
+    focusBox(Math.min(digits.length, 3));
+  };
+
   const handleVerifyOtp = async () => {
     setOtpError("");
     const otpString = otp.join("");
 
     if (otpString.length !== 4) {
-      setOtpError("Please enter a valid 4-digit OTP.");
+      setOtpError("Enter all 4 digits of the code.");
       return;
     }
 
     setLoading(true);
 
     try {
-      // Replace with actual OTP verification API call
       const response = await axios.post("/verify-otp", { otp: otpString });
-      
+
       if (response.data.success) {
-        navigate("/app/dashboard"); // Navigate to dashboard after successful verification
+        navigate("/app/dashboard");
       } else {
-        ErrorToast(response.data.message || "OTP verification failed.");
+        ErrorToast(response.data.message || "That code didn't work. Try again.");
       }
     } catch (error) {
       console.error("OTP verification error:", error);
-      ErrorToast("An error occurred. Please try again.");
+      ErrorToast("Something went wrong. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-   const handleClick = () => { 
+  const handleClick = () => {
     navigate("/auth/reset-password");
   };
 
   return (
-    <div className="min-h-screen bg-[#EAEEF8] flex flex-col w-full">
-      {/* Main Content Area */}
-      <main className="flex-grow flex items-center justify-center">
-        {/* Centered Content Container */}
-        <div className="w-full max-w-md flex flex-col items-center">
-          
-          {/* Logo (Optional) */}
-          {/* <div className="mb-8">
-            <img 
-              src={Logo} 
-              alt="Prospect Intel Logo" 
-              className="h-auto w-auto" 
-            />
-          </div> */}
+    <div>
+      <h2 className="text-xl font-semibold text-ink">Enter your code</h2>
+      <p className="mt-1.5 text-[13px] leading-relaxed text-ink-500">We sent a 4-digit code to your email.</p>
 
-          {/* OTP Form Wrapper */}
-          <div className="w-full rounded-xl p-6 ">
-            
-            {/* OTP Verification Title */}
-            <h2 className="text-md font-normal text-center text-gray-800 mb-6">
-Enter the 4 digit code send to dav*********.com            </h2>
-
-            {/* OTP Input Form */}
-            <form className="w-full flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(); }}>
-              
-              {/* OTP Input with individual squares */}
-              <div className="w-full flex justify-between gap-2 mb-4">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    id={`otp-${index}`}
-                    type="text"
-                    maxLength="1"
-                    value={digit}
-                    onChange={(e) => handleOtpChange(e, index)}
-                    onKeyDown={(e) => handleKeyDown(e, index)}
-                    className="w-24 h-16 text-center text-2xl font-bold bg-white bg-opacity-25 p-4 pt-4 border-2 border-white  rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="-"
-                  />
-                ))}
-              </div>
-              {otpError && <p className="text-red-500 text-sm mt-1">{otpError}</p>}
-
-              {/* Verify OTP Button */}
-              <button
-                type="submit"
-                className="w-md h-12 bg-[#0087C3] text-white flex gap-2 items-center justify-center text-base font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 disabled:bg-blue-400"
-                disabled={loading}
-                onClick={handleClick}
-              >
-                <span>Verify OTP</span>
-                {loading && <FiLoader className="animate-spin text-lg" />}
-              </button>
-            </form>
-
-            {/* Optionally you can add a resend OTP link */}
-            <div className="text-center mt-4">
-              <button 
-                className="text-sm text-blue-500 hover:underline"
-                onClick={() => { /* Resend OTP logic here */ }}
-              >
-                Resend OTP
-              </button>
-            </div>
+      <form
+        className="mt-6"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleVerifyOtp();
+        }}
+      >
+        <fieldset>
+          <legend className="sr-only">4-digit code</legend>
+          <div className="flex gap-3" onPaste={handlePaste}>
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                ref={(el) => (inputs.current[index] = el)}
+                id={`otp-${index}`}
+                type="text"
+                inputMode="numeric"
+                autoComplete={index === 0 ? "one-time-code" : "off"}
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOtpChange(e, index)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                aria-label={`Digit ${index + 1}`}
+                aria-invalid={otpError ? true : undefined}
+                className="h-12 w-full min-w-0 rounded-md border border-ink-200 bg-white text-center text-xl font-semibold text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/20"
+              />
+            ))}
           </div>
-        </div>
-      </main>
+        </fieldset>
+        {otpError && (
+          <p role="alert" className="mt-2 text-xs text-red-600">
+            {otpError}
+          </p>
+        )}
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          loading={loading}
+          onClick={handleClick}
+          className="mt-6 w-full"
+        >
+          Verify code
+        </Button>
+      </form>
+
+      <div className="mt-4 text-center">
+        <button
+          type="button"
+          className="rounded text-[13px] font-medium text-signal-700 hover:underline"
+          onClick={() => {
+            /* Resend OTP logic here */
+          }}
+        >
+          Resend code
+        </button>
+      </div>
     </div>
   );
 };
