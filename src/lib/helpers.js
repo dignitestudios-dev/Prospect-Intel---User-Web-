@@ -796,6 +796,14 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     },
   ];
 
+  // A long card may start near the bottom of a page and continue on the next,
+  // but never starts with fewer than a heading plus a few lines of room.
+  const startCharCard = (y, w, rows) => {
+    const full = calcCharTableH(w, rows);
+    const minStart = Math.min(full, 26 + 12 + 3 * 11);
+    return ensureSpace(y, minStart);
+  };
+
   if (sideBySideH <= remainingPage1H) {
     // Both character cards fit on Page 1 side-by-side
     drawCharTable(M, currentY, HALF_W, "Football Character", footballRows);
@@ -807,65 +815,33 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
       personalRows,
     );
     currentY += sideBySideH + 16;
-
-    // Check if Other Relevant Information fits on Page 1 or moves to next page
-    const otherH = calcCharTableH(FULL_W, otherRows);
-    currentY = ensureSpace(currentY, otherH);
-    currentY = drawCharTable(
-      M,
-      currentY,
-      FULL_W,
-      "Other Relevant Information",
-      otherRows,
-    );
   } else {
-    // Content overflows / goes over to next page:
-    // Football Character on its own page (full width)
-    doc.addPage();
-    addPageHeader();
-    currentY = HEADER_H + 12;
+    // Longer text: stack full width, each card starting right below the last
+    currentY = startCharCard(currentY, FULL_W, footballRows);
+    currentY =
+      drawCharTable(M, currentY, FULL_W, "Football Character", footballRows) +
+      16;
 
-    currentY = drawCharTable(
-      M,
-      currentY,
-      FULL_W,
-      "Football Character",
-      footballRows,
-    );
-
-    // Personal Character shifted to next page (full width)
-    doc.addPage();
-    addPageHeader();
-    currentY = HEADER_H + 12;
-
-    currentY = drawCharTable(
-      M,
-      currentY,
-      FULL_W,
-      "Personal Character",
-      personalRows,
-    );
-
-    // Other Relevant Information shifted to next page (full width)
-    doc.addPage();
-    addPageHeader();
-    currentY = HEADER_H + 12;
-
-    currentY = drawCharTable(
-      M,
-      currentY,
-      FULL_W,
-      "Other Relevant Information",
-      otherRows,
-    );
+    currentY = startCharCard(currentY, FULL_W, personalRows);
+    currentY =
+      drawCharTable(M, currentY, FULL_W, "Personal Character", personalRows) +
+      16;
   }
 
+  // Other Relevant Information continues straight after, splitting across pages if long
+  currentY = startCharCard(currentY, FULL_W, otherRows);
+  currentY = drawCharTable(
+    M,
+    currentY,
+    FULL_W,
+    "Other Relevant Information",
+    otherRows,
+  );
+
   // ════════════════════════════════════════════════════════════
-  // Overview & Grading Scale (Starts on a new page)
+  // Overview & Grading Scale (continues right below the previous section)
   // ════════════════════════════════════════════════════════════
-  doc.addPage();
-  addPageHeader();
-  let p2Y = HEADER_H + 20;
+  let p2Y = currentY + 18;
 
   // ── Grade helpers ────────────────────────────────────────────
   const normalizeGrade = (score) => {
@@ -903,12 +879,6 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     gradeColors[normalizeGrade(score)] || [181, 181, 181];
 
   // ── Overview ─────────────────────────────────────────────────
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(...BLACK);
-  doc.text("Overview", PW / 2, p2Y + 14, { align: "center" });
-  p2Y += 30;
-
   const OV_W = (PW - M * 2 - 10) / 2;
   const OV_RX = M + OV_W + 10;
   const OV_PAD = 10;
@@ -933,7 +903,13 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
     weaknesses.length > 0 ? measureListH(weaknesses) : 66,
   );
 
-  p2Y = ensureSpace(p2Y, OV_H);
+  // Keep the heading with its panels
+  p2Y = ensureSpace(p2Y, 30 + OV_H);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(...BLACK);
+  doc.text("Overview", PW / 2, p2Y + 14, { align: "center" });
+  p2Y += 30;
 
   // Strength panel
   strokeRect(M, p2Y, OV_W, OV_H, MGRAY, 0.5);
@@ -994,7 +970,7 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   p2Y += OV_H + 30;
 
   // ── Grading Scale ────────────────────────────────────────────
-  p2Y = ensureSpace(p2Y, 20);
+  p2Y = ensureSpace(p2Y, 30 + 120);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(...BLACK);
@@ -1007,8 +983,6 @@ export const generateAthletePDF = async (athleteDetail, formatDate) => {
   const CARD_H = 120;
   const BADGE_SZ = 32;
   const C_PAD = 12;
-
-  p2Y = ensureSpace(p2Y, CARD_H);
 
   const drawGradeCard = (x, y, w, h, score, title) => {
     const bgColor = getGradeColor(score);
